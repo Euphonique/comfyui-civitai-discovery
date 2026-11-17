@@ -729,6 +729,45 @@
   margin: 4px 6px;
   background: var(--border-color, #444);
 }
+/* "Save to collection" submenu */
+.cf-ctx-parent.open {
+  background: var(--comfy-input-bg, #2a2a2a);
+}
+.cf-ctx-parent span {
+  flex: 1;
+}
+.cf-ctx-item .pi.cf-ctx-arrow {
+  width: auto;
+  font-size: 10px;
+}
+.cf-ctxsub {
+  min-width: 180px;
+  max-width: 280px;
+}
+.cf-ctx-list {
+  max-height: min(360px, 60vh);
+  overflow-y: auto;
+}
+.cf-ctx-check span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-ctx-check.checked .pi {
+  color: var(--p-primary-color, #4caf50);
+}
+.cf-ctx-item:disabled.cf-ctx-check {
+  opacity: 0.6;
+  cursor: progress;
+}
+.cf-ctx-note {
+  padding: 6px 10px;
+  color: var(--descrip-text, #999);
+  max-width: 260px;
+}
+.cf-ctx-note.error {
+  color: #e57373;
+}
 
 /* ---- filter layout ---- */
 .cf-row3 {

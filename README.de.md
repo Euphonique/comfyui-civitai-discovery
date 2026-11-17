@@ -63,7 +63,8 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   - Die Aktion des Schnell-Buttons ist im Menü fett markiert.
   - „Prompt + Negativ“ beachtet die Ziel-Einstellung „Keiner“. Die Einzel- und Seed-Kombinationen übernehmen immer; steht ein Ziel auf „Keiner“, gilt dafür Auto. Fehlt einem Bild der Seed, übernehmen die Kombinationen nur den Prompt.
   - Prompt kopieren, Seed kopieren, Alles kopieren
-  - Details öffnen, In Collection speichern…, Werke von @User, Auf Civitai öffnen
+  - Details öffnen, Werke von @User, Auf Civitai öffnen
+  - **In Collection speichern** öffnet ein Untermenü mit all deinen Collections. Ein Häkchen zeigt, wo das Bild schon liegt, ein Klick fügt es hinzu oder entfernt es sofort. Das Menü bleibt offen, du kannst also mehrere Collections nacheinander anhaken. „Neue Collection…“ öffnet die Detailansicht mit dem Namensfeld.
   - Einträge, für die das Bild keine Daten hat, sind ausgegraut.
 - **Detailansicht** (Klick auf ein Bild):
   - **Reaktionen** unter dem Bild: 👍 ❤️ 😂 😢 mit Anzahl, dazu die Zahl der Kommentare (💬, öffnet die Seite auf Civitai). Mit API-Key sind deine eigenen Reaktionen hervorgehoben, und ein Klick setzt oder entfernt sie direkt auf Civitai. Dafür braucht der Key Schreibrechte („Social: write“); ein Key mit vollem Zugriff hat sie.

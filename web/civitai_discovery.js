@@ -173,7 +173,6 @@ const STRINGS = {
     ctxCopyPrompt: "Copy prompt",
     ctxCopySeed: "Copy seed",
     ctxDetails: "Open details",
-    ctxSave: "Save to collection…",
     ctxUser: "Works by @{user}",
     trendingNeedsKey: "Trending tags and searching all Civitai tags need an API key (⚙).",
     noTagsYet: "No tags in the loaded results yet.",
@@ -339,7 +338,6 @@ const STRINGS = {
     ctxCopyPrompt: "Prompt kopieren",
     ctxCopySeed: "Seed kopieren",
     ctxDetails: "Details öffnen",
-    ctxSave: "In Collection speichern…",
     ctxUser: "Werke von @{user}",
     trendingNeedsKey: "Trending-Tags und die Suche in allen Civitai-Tags brauchen einen API-Key (⚙).",
     noTagsYet: "In den geladenen Ergebnissen gibt es noch keine Tags.",
@@ -2140,6 +2138,24 @@ class BrowserPanel {
   }
 
   /* ---------- save to collection ---------- */
+  /** Add/remove an image to/from one of your collections on Civitai; returns the new set of collection ids. */
+  async setItemCollection(item, collection, add) {
+    const res = await postJson(`${API}/item_collections?domain=${encodeURIComponent(this.state.domain)}`, {
+      imageId: item.id,
+      add: add ? [collection.id] : [],
+      remove: add ? [] : [collection.id],
+    });
+    toast("success", t(add ? "addedTo" : "removedFrom", { name: collection.name }));
+    if (this.isFav && this.state.source === `collection:${collection.id}`) {
+      // the favorites collection currently shown: drop the image from the grid / bring it back
+      if (add) this.removedIds.delete(item.id);
+      else this.removedIds.add(item.id);
+      if (this.detailView.hidden) this.renderGrid();
+      else this.gridDirty = true;
+    }
+    for (const p of panels.values()) if (p !== this) p.onItemCollectionsChanged(item, collection.id, add);
+    return new Set(res.collectionIds || []);
+  }
   async togglePicker(item, box, btn, autoAddId = null) {
     if (!box.hidden) {
       box.hidden = true;
@@ -2165,24 +2181,8 @@ class BrowserPanel {
     const apply = async (collection, add, checkbox) => {
       checkbox.disabled = true;
       try {
-        const res = await postJson(`${API}/item_collections?domain=${domain}`, {
-          imageId: item.id,
-          add: add ? [collection.id] : [],
-          remove: add ? [] : [collection.id],
-        });
-        inIds = new Set(res.collectionIds || []);
+        inIds = await this.setItemCollection(item, collection, add);
         checkbox.checked = inIds.has(collection.id);
-        toast("success", t(add ? "addedTo" : "removedFrom", { name: collection.name }));
-        // removed from the favorites collection currently shown -> drop it from the grid
-        if (this.isFav && !add && this.state.source === `collection:${collection.id}`) {
-          this.removedIds.add(item.id);
-          this.gridDirty = true;
-        }
-        if (this.isFav && add && this.state.source === `collection:${collection.id}`) {
-          this.removedIds.delete(item.id);
-          this.gridDirty = true;
-        }
-        for (const p of panels.values()) if (p !== this) p.onItemCollectionsChanged(item, collection.id, add);
       } catch (e) {
         checkbox.checked = !add;
         toast("error", t("saveToCollection"), String(e.message || e));
@@ -2323,6 +2323,84 @@ class BrowserPanel {
   }
 
   /* ---------- context menu ---------- */
+  /** Fill the "Save to collection" submenu: one click adds/removes the image, the menu stays open. */
+  async collectionSubmenu(item, sub) {
+    const relayout = () => sub.parentElement?.placeSub?.();
+    const newEntry = () =>
+      h(
+        "button",
+        {
+          class: "cf-ctx-item",
+          onclick: () => {
+            closeContextMenu();
+            this.openDetail(item);
+            Promise.resolve(this.openPicker?.()).then(async () => {
+              const input = this.detailView.querySelector(".cf-row input[type=text][maxlength='30']");
+              if (!input) return;
+              input.focus({ preventScroll: true });
+              // the image above may still be loading and push the field out of view
+              const media = this.detailView.querySelector("img, video");
+              if (media && !(media.complete || media.readyState >= 1))
+                await new Promise((r) => {
+                  media.addEventListener("load", r, { once: true });
+                  media.addEventListener("loadedmetadata", r, { once: true });
+                  setTimeout(r, 2000);
+                });
+              input.scrollIntoView({ block: "center" });
+            });
+          },
+        },
+        iconEl("pi-plus"),
+        h("span", {}, t("newCollection") + "…")
+      );
+    if (!shared.config?.hasKey) {
+      sub.replaceChildren(h("div", { class: "cf-ctx-note" }, t("needKey")));
+      return relayout();
+    }
+    sub.replaceChildren(h("div", { class: "cf-ctx-note" }, t("loading")));
+    relayout();
+    let own, inIds;
+    try {
+      const domain = encodeURIComponent(this.state.domain);
+      const [cols, res] = await Promise.all([shared.ownCollections(), fetchJson(`${API}/item_collections?imageId=${item.id}&domain=${domain}`)]);
+      own = cols;
+      inIds = new Set(res.collectionIds || []);
+    } catch (e) {
+      if (!sub.isConnected) return;
+      sub.replaceChildren(h("div", { class: "cf-ctx-note error" }, String(e.message || e)));
+      return relayout();
+    }
+    if (!sub.isConnected) return; // menu closed meanwhile
+    const rows = own.map((c) => {
+      const check = h("i", { class: "pi" });
+      const btn = h("button", { class: "cf-ctx-item cf-ctx-check" }, check, h("span", {}, c.name));
+      const paint = () => {
+        const on = inIds.has(c.id);
+        check.className = on ? "pi pi-check" : "pi";
+        btn.classList.toggle("checked", on);
+      };
+      paint();
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        btn.disabled = true;
+        try {
+          inIds = await this.setItemCollection(item, c, !inIds.has(c.id));
+        } catch (err) {
+          toast("error", t("saveToCollection"), String(err.message || err));
+        } finally {
+          btn.disabled = false;
+          paint();
+        }
+      });
+      return btn;
+    });
+    sub.replaceChildren(
+      h("div", { class: "cf-ctx-list" }, rows.length ? rows : h("div", { class: "cf-ctx-note" }, t("noOwnCollections"))),
+      h("div", { class: "cf-ctx-sep" }),
+      newEntry()
+    );
+    relayout();
+  }
   showContextMenu(item, x, y) {
     closeContextMenu();
     const meta = item.meta || {};
@@ -2341,34 +2419,70 @@ class BrowserPanel {
     add("pi-clone", t("copyAll"), () => copyText(formatA1111(meta)), !!item.meta);
     sep();
     add("pi-window-maximize", t("ctxDetails"), () => this.openDetail(item));
-    add("pi-bookmark", t("ctxSave"), () => {
-      this.openDetail(item);
-      this.openPicker?.();
-    });
+    entries.push({ icon: "pi-bookmark", label: t("saveToCollection"), enabled: true, submenu: (anchor) => this.collectionSubmenu(item, anchor) });
     if (item.username) add("pi-user", t("ctxUser", { user: item.username }), () => this.showUser(item.username));
     add("pi-external-link", t("openCivitai"), () => window.open(item.pageUrl, "_blank", "noopener"));
 
     const menu = h(
       "div",
       { class: "cf-ctxmenu", oncontextmenu: (e) => e.preventDefault() },
-      entries.map((en) =>
-        en === "-"
-          ? h("div", { class: "cf-ctx-sep" })
-          : h(
-              "button",
-              {
-                class: "cf-ctx-item" + (en.bold ? " bold" : ""),
-                disabled: !en.enabled,
-                onclick: () => {
-                  closeContextMenu();
-                  en.fn();
-                },
-              },
-              iconEl(en.icon),
-              h("span", {}, en.label)
-            )
-      )
+      entries.map((en) => {
+        if (en === "-") return h("div", { class: "cf-ctx-sep" });
+        if (en.submenu) {
+          const btn = h(
+            "button",
+            { class: "cf-ctx-item cf-ctx-parent", onclick: () => openSub(btn, en) },
+            iconEl(en.icon),
+            h("span", {}, en.label),
+            h("i", { class: "pi pi-chevron-right cf-ctx-arrow" })
+          );
+          btn.addEventListener("mouseenter", () => openSub(btn, en));
+          return btn;
+        }
+        const btn = h(
+          "button",
+          {
+            class: "cf-ctx-item" + (en.bold ? " bold" : ""),
+            disabled: !en.enabled,
+            onclick: () => {
+              closeContextMenu();
+              en.fn();
+            },
+          },
+          iconEl(en.icon),
+          h("span", {}, en.label)
+        );
+        btn.addEventListener("mouseenter", closeSub);
+        return btn;
+      })
     );
+    let sub = null;
+    let subOwner = null;
+    function closeSub() {
+      sub?.remove();
+      sub = subOwner = null;
+      menu.querySelector(".cf-ctx-parent.open")?.classList.remove("open");
+    }
+    function openSub(btn, en) {
+      if (subOwner === btn) return;
+      closeSub();
+      subOwner = btn;
+      btn.classList.add("open");
+      sub = h("div", { class: "cf-ctxmenu cf-ctxsub" });
+      menu.append(sub);
+      en.submenu(sub);
+      placeSub();
+    }
+    // next to the parent entry; flips left / up when there's no room
+    function placeSub() {
+      if (!sub || !subOwner) return;
+      const b = subOwner.getBoundingClientRect();
+      const r = sub.getBoundingClientRect();
+      const left = b.right + r.width + 4 <= window.innerWidth ? b.right + 2 : b.left - r.width - 2;
+      sub.style.left = `${Math.max(4, left)}px`;
+      sub.style.top = `${Math.max(4, Math.min(b.top - 5, window.innerHeight - r.height - 4))}px`;
+    }
+    menu.placeSub = placeSub;
     document.body.append(menu);
     // keep inside the window
     const r = menu.getBoundingClientRect();

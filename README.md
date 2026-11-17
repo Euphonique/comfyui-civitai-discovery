@@ -63,7 +63,8 @@ If a combination returns no results, the panel shows a notice with the buttons *
   - The quick button's action is shown in bold in the menu.
   - "Prompt + negative" respects the "None" target setting. The single and seed combinations always insert; if a target is set to "None", Auto is used for it. If an image has no seed, the combinations insert only the prompt.
   - Copy prompt, Copy seed, Copy all
-  - Open details, Save to collection…, Works by @user, Open on Civitai
+  - Open details, Works by @user, Open on Civitai
+  - **Save to collection** opens a submenu with all your collections; a checkmark shows where the image already is, and a click adds or removes it right away. The menu stays open, so you can tick several collections in a row. "New collection…" opens the detail view with the name field ready.
   - Entries for which the image has no data are greyed out.
 - **Detail view** (click on an image):
   - **Reactions** below the image: 👍 ❤️ 😂 😢 with counts, plus the number of comments (💬, opens the page on Civitai). With an API key your own reactions are highlighted, and a click sets or removes them directly on Civitai. This needs a key with write access ("Social: write"); a full-access key has it.
