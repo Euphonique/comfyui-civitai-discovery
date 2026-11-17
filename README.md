@@ -9,6 +9,9 @@ A ComfyUI plugin that adds two new panels to the left sidebar:
 
 Both panels let you filter, insert prompts into prompt nodes with one click, and save images to your Civitai collections. Saving happens directly on Civitai, not just locally.
 
+<img width="3038" height="1464" alt="Bildschirmfoto vom 2026-11-17 23-51-54" src="https://github.com/user-attachments/assets/583a9903-1d43-4617-b9b2-e5fc8e9a4296" />
+
+
 ## Features
 
 ### Civitai Discovery
