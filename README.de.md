@@ -10,6 +10,10 @@ Ein ComfyUI-Plugin mit zwei neuen Panels in der linken Seitenleiste:
 In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen und Bilder in deine Civitai-Collections speichern. Gespeichert wird direkt auf Civitai, nicht nur lokal.
 
 <img width="3038" height="1464" alt="Bildschirmfoto vom 2026-11-17 23-51-54" src="https://github.com/user-attachments/assets/967a3e79-cd95-49cf-ae65-5c588f0b8c5a" />
+</br></br>
+<img height="535" alt="Bildschirmfoto vom 2026-11-17 23-51-00" src="https://github.com/user-attachments/assets/72dbe638-7dc2-4e2b-83dd-f737298a511c" /> 
+<img height="535" alt="Bildschirmfoto vom 2026-11-17 23-55-28" src="https://github.com/user-attachments/assets/7f3a5a99-fe6a-414a-b161-9c2cb05fface" /> 
+<img height="535" alt="Bildschirmfoto vom 2026-11-17 23-54-40" src="https://github.com/user-attachments/assets/6b3762d5-79eb-44c7-86ff-f5a13f110943" />
 
 *[mehr Screenshots](screenshots.md)*
 
