@@ -10,6 +10,6 @@ Repository = "https://github.com/Euphonique/comfyui-civitai-discovery"
 
 [tool.comfy]
 # TODO: your publisher ID from https://registry.comfy.org (shown after the @ on your profile)
-PublisherId = ""
+PublisherId = "euphonique"
 DisplayName = "Civitai Discovery"
 Icon = ""
