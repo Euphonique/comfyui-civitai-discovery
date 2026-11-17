@@ -1,0 +1,6 @@
+config.json
+prefs.json
+*.tmp
+__pycache__/
+*.pyc
+*.part

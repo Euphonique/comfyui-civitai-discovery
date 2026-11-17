@@ -1,0 +1,6 @@
+# Never ship local secrets/settings (also in .gitignore - belt and braces)
+config.json
+prefs.json
+*.tmp
+*.part
+.github/
