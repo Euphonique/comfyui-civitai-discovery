@@ -25,7 +25,7 @@ BASE_URL = "https://civitai.com"
 DOMAINS = {"com": "https://civitai.com", "red": "https://civitai.red"}
 SFW_LEVELS = 1 | 2  # PG | PG13
 EDGE_BASE = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA"
-USER_AGENT = "ComfyUI-Civitai-Discovery/1.1"
+USER_AGENT = "ComfyUI-Civitai-Discovery/1.2"
 ALL_BROWSING_LEVELS = 31  # PG | PG13 | R | X | XXX
 
 # Collection types whose items can be shown as images. `None` = mixed/legacy.
