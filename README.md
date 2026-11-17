@@ -17,6 +17,8 @@ Both panels let you filter, insert prompts into prompt nodes with one click, and
 - **Base model**: e.g. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. The most popular families are listed first, followed by all others. Civitai filters on the server, so this works for rare models too.
 - Sort, period and base model sit in one row. Below it, **Advanced** expands the remaining filters: media type, metadata (with metadata, with prompt, without), rating and blur NSFW. If any of them differ from the default, the collapsed section shows how many, e.g. "Advanced (1)".
 - **Media type and rating** are filtered on the server as well.
+- **People you follow** (👥 button in the header): only works by the users you follow on Civitai, with the same sort, period and filters. Needs an API key.
+- **Images made with a model**: the 🖼 button next to a checkpoint or LoRA in the resources list shows that model version's gallery (all time). Also works from the Favorites tab, which then switches to Discovery.
 - Works without an API key. You need a key for content rated R and above via civitai.red, and for saving to collections.
 
 ### Civitai Favorites
@@ -52,6 +54,8 @@ If a combination returns no results, the panel shows a notice with the buttons *
 ### In both panels
 - **Full width**: The ⧉ button at the top of the panel stretches it across the whole canvas. A second click, Esc, or switching sidebar tabs brings it back. At full width the grid has more columns, and the detail view shows the image on the left and the info on the right.
 - **Masonry grid** with infinite scroll. Videos play on hover, and a `META` badge marks items with metadata.
+- **Drag & drop** an artwork onto the canvas: onto a **Load Image** node it sets the image, onto a **prompt node** it inserts the prompt (the negative one if that node feeds a sampler's `negative` input), onto a **sampler** it sets seed/steps/CFG, and onto empty space it creates a new Load Image node there. In full width the panel fades out while dragging so you can reach the canvas.
+- **Prompt history** (🕘 button in the header): the last 50 artworks whose prompts you sent to a node, newest first, shared by both tabs and stored on the server (`history.json`). Each entry can be inserted again (prompt + negative, prompt only, seed), copied, or opened in the detail view.
 - **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Only prompt → node". All context-menu actions that insert something into the workflow are available.
 - **Tooltip**: Resting on an image for a moment shows a compact preview: prompt (shortened), negative prompt, parameters, tags, reactions and user.
 - **Context menu** (right-click on an image):
@@ -63,10 +67,10 @@ If a combination returns no results, the panel shows a notice with the buttons *
   - The quick button's action is shown in bold in the menu.
   - "Prompt + negative" respects the "None" target setting. The single and seed combinations always insert; if a target is set to "None", Auto is used for it. If an image has no seed, the combinations insert only the prompt.
   - Copy prompt, Copy seed, Copy all
-  - Open details, Works by @user, Open on Civitai
+  - Recreate in workflow…, Open details, Works by @user, Open on Civitai
   - **Save to collection** opens a submenu with all your collections; a checkmark shows where the image already is, and a click adds or removes it right away. The menu stays open, so you can tick several collections in a row. "New collection…" opens the detail view with the name field ready.
   - Entries for which the image has no data are greyed out.
-- **Detail view** (click on an image):
+- **Detail view** (click on an image): **←/→** (or the arrows next to "Back") go to the previous/next artwork and load more at the end; **Esc** goes back to the grid.
   - **Reactions** below the image: 👍 ❤️ 😂 😢 with counts, plus the number of comments (💬, opens the page on Civitai). With an API key your own reactions are highlighted, and a click sets or removes them directly on Civitai. This needs a key with write access ("Social: write"); a full-access key has it.
   - **Save to collection**: a list of your collections with checkmarks; a click adds or removes the image. Below it you can create a new collection right away, and the image goes straight into it.
   - Prompt and negative prompt, each with "Copy" and "→ Node"
@@ -77,6 +81,28 @@ If a combination returns no results, the panel shows a notice with the buttons *
   - **Resources**, grouped into checkpoint, LoRAs (with weight) and other (embeddings, upscalers …), each linked to Civitai. Civitai supplies an image's model versions. If they are missing, the plugin looks them up by the hashes in the metadata. Anything that can't be resolved is shown in grey without a link.
   - All metadata as JSON, link to the image on Civitai
   - Clicking the **username** shows all works by that user.
+
+### Local models, downloads and "Recreate in workflow"
+
+**In the resources list** of the detail view, every checkpoint, LoRA, embedding etc. shows whether you already have it:
+- **✓ green**: found in ComfyUI's model folders by its SHA256 hash
+- **✓ yellow**: a file with the same name exists, but its hash wasn't checked
+- **⬇**: not available locally. A click opens a small form to download it straight into ComfyUI: model type (for checkpoints `checkpoints` or `diffusion_models`), the model folder (all folders ComfyUI knows, including `extra_model_paths.yaml`; the one with the most models is preselected) and an optional subfolder. The choice is remembered per model type and base model. Progress is shown in the list, and the file is checked against Civitai's SHA256 afterwards. Civitai only allows downloads with an API key.
+
+How the plugin finds your models without hashing everything: it first reads hashes that other tools already store next to the files (LoRA Manager `.metadata.json`, Stability Matrix `.cm-info.json`, `.sha256` files). Only files whose size exactly matches the Civitai file are hashed, once, and cached in `hashes.json`.
+
+**Recreate in workflow…** (button below the resources, or in the context menu) opens a dialog listing what the image used and where it would go in your current workflow:
+
+| Row | Possible targets |
+|---|---|
+| Checkpoint | every node with a dropdown that offers exactly this file (Load Checkpoint, UNET loader, custom loaders …) |
+| LoRA | **LoRA Manager** loaders (`Lora Loader (LoraManager)`: the LoRAs are written into its text field and switched on with their weights; replaces the LoRAs in that node) · any loader with a `lora_name` dropdown · **new LoRA loaders** (inserted after the checkpoint and wired to everything the checkpoint fed) · `<lora:name:weight>` in the prompt · skip |
+| Prompt / negative | the prompt targets from the settings |
+| Sampler | seed (set to "fixed"), steps, CFG, sampler and scheduler (A1111 names like "DPM++ 2M Karras" are translated) |
+| Size | the latent node feeding the sampler, or, if its width/height come from another node, that node: number nodes get the exact values, a **Resolution Selector** gets the closest aspect ratio and megapixels (the dialog shows the resulting size) |
+| Clip skip | a `CLIP Set Last Layer` node, if present |
+
+Every row can be switched off or pointed elsewhere; nothing changes until you click **Apply**. Missing models can be downloaded right in the dialog, and become selectable once the download is done. Missing LoRAs are switched off by default. The nodes you applied to are remembered and preselected next time: the same node if it's in the workflow, otherwise a node of the same type (for prompts only the same node, else the prompt settings apply).
 
 ### Which node receives the prompt?
 
@@ -119,7 +145,7 @@ All panel settings survive a ComfyUI restart and apply in every browser and on e
 - **API key** in `config.json`
 - **Dropdowns, filters and search** (selected collection, sort, period, base model, rating, domain, NSFW blur, selected tags, search text, tag cloud and "Advanced" open/closed, recently viewed users, target nodes for prompt/negative, quick button action) in `prefs.json`
 
-Both files live in the plugin folder on the ComfyUI server. The browser only keeps a copy in case the server is unreachable. Not saved: an open user view in Discovery and full width.
+Both files live in the plugin folder on the ComfyUI server. The browser only keeps a copy in case the server is unreachable. The prompt history is stored separately in `history.json`. Not saved: an open user or model view in Discovery and full width.
 
 ### civitai.com vs. civitai.red
 
@@ -139,6 +165,7 @@ Civitai only delivers content rated R and above via **civitai.red**. Through civ
 - **Checkpoint and LoRAs** come from `GET /api/v1/model-versions/{id}` (for an image's `modelVersionIds`) or `/api/v1/model-versions/by-hash/{hash}`. The ComfyUI server caches the results until it restarts.
 - **Write operations** use the tRPC mutations `collection.saveItem`, `collection.upsert` and `collection.delete`. The public API can only read collections.
 - These tRPC endpoints are internal and may change without notice. If something breaks, the cause is usually in [`civitai_client.py`](civitai_client.py).
+- **Downloads** only accept Civitai download URLs (`/api/download/models/…`) and only write into ComfyUI's model folders (no `..`, existing files are never overwritten). They run as background jobs on the server; a `.part` file is renamed after the SHA256 check.
 - All requests go through the ComfyUI backend (`/civitai_discovery/*`). This avoids CORS issues and keeps the key on the server.
 - The metadata filter runs in the browser (the API has no working filter for it). The plugin loads more pages automatically as needed: at most 5 in a row without matches, then via "Load more".
 - Tested on Linux. Windows and macOS should work since the plugin is pure Python and JavaScript, but haven't been tested yet.
@@ -150,6 +177,8 @@ Civitai only delivers content rated R and above via **civitai.red**. Through civ
 | `__init__.py` | ComfyUI entry point, `WEB_DIRECTORY` |
 | `civitai_routes.py` | HTTP routes in the ComfyUI server, API key storage |
 | `civitai_client.py` | Civitai API client (REST + tRPC, read and write) |
+| `local_models.py` | Which resources exist locally (hash matching, `hashes.json` cache) |
+| `downloads.py` | Background downloads into the model folders |
 | `web/civitai_discovery.js` | Both panels, filters, collection management, inserting into nodes (English/German depending on the ComfyUI language) |
 | `web/civitai_discovery.css` | Styles (use ComfyUI's theme variables) |
 | `web/base_models.json` | Base model → family mapping ("SDXL 1.0" → "Stable Diffusion XL"), generated from Civitai's `basemodel.constants.ts` |

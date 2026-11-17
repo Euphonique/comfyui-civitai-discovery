@@ -157,13 +157,18 @@ class CivitaiClient:
         limit: int = 50,
         browsing_level: int = ALL_BROWSING_LEVELS,
         sort: str = "Newest",
+        period: str = "AllTime",
+        media_type: str | None = None,
+        base_models: list[str] | None = None,
+        tags: list[int] | None = None,
     ) -> dict:
-        """source: "collection:<id>", "reaction:<Like|Heart|...>" or "user:<username>"."""
+        """source: "collection:<id>", "reaction:<Like|Heart|...>", "user:<username>"
+        or "followed" (the users the key's owner follows)."""
         kind, _, value = source.partition(":")
         payload: dict[str, Any] = {
             "limit": max(1, min(int(limit), 100)),
             "sort": sort,
-            "period": "AllTime",
+            "period": period if period in PERIODS else "AllTime",
             "browsingLevel": int(browsing_level),
             "include": [],
         }
@@ -173,6 +178,14 @@ class CivitaiClient:
             payload["reactions"] = [value]
         elif kind == "user" and USERNAME_RE.fullmatch(value):
             payload["username"] = value
+        elif kind == "followed":
+            payload["followed"] = True
+            if media_type in ("image", "video"):
+                payload["types"] = [media_type]
+            if base_models:
+                payload["baseModels"] = base_models
+            if tags:
+                payload["tags"] = [int(t) for t in tags[:10]]
         else:
             raise CivitaiError(f"Invalid source '{source}'.", 400)
         if cursor not in (None, ""):
@@ -199,6 +212,7 @@ class CivitaiClient:
         base_models: list[str] | None = None,
         username: str | None = None,
         tags: list[int] | None = None,
+        model_version_id: int | None = None,
     ) -> dict:
         """General image feed via the public REST API (no key required).
 
@@ -222,6 +236,8 @@ class CivitaiClient:
             params["username"] = username
         if tags:
             params["tags"] = ",".join(str(int(t)) for t in tags[:10])
+        if model_version_id:
+            params["modelVersionId"] = int(model_version_id)
         if cursor not in (None, ""):
             params["cursor"] = cursor
         url = f"{self.base}/api/v1/images?" + "&".join(
@@ -517,6 +533,26 @@ def _normalize_version(v: dict, base: str) -> dict | None:
         "baseModel": v.get("baseModel") or "",
         "url": f"{base}/models/{v['modelId']}?modelVersionId={v['id']}",
         "hashes": sorted(hashes),
+        "file": _primary_file(v.get("files") or []),
+    }
+
+
+def _primary_file(files: list) -> dict | None:
+    """The file Civitai offers by default (what the download button gets)."""
+    f = next((f for f in files if isinstance(f, dict) and f.get("primary")), None) or next(
+        (f for f in files if isinstance(f, dict) and f.get("type") in ("Model", None)), None
+    )
+    if not f:
+        return None
+    meta = f.get("metadata") or {}
+    return {
+        "name": f.get("name") or "",
+        "sizeKB": f.get("sizeKB"),
+        "sha256": ((f.get("hashes") or {}).get("SHA256") or "").upper() or None,
+        "downloadUrl": f.get("downloadUrl") or "",
+        "format": meta.get("format"),
+        "fp": meta.get("fp"),
+        "size": meta.get("size"),
     }
 
 

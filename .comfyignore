@@ -4,3 +4,5 @@ prefs.json
 *.tmp
 *.part
 .github/
+hashes.json
+history.json

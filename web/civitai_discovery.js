@@ -177,6 +177,48 @@ const STRINGS = {
     trendingNeedsKey: "Trending tags and searching all Civitai tags need an API key (⚙).",
     noTagsYet: "No tags in the loaded results yet.",
     normalWidth: "Back to sidebar width",
+    localHave: "Available locally: {name}",
+    localByName: "Probably available locally (same file name, hash not checked): {name}",
+    localChecking: "Checking local model folders…",
+    download: "Download",
+    downloadTitle: "Download into ComfyUI ({size})",
+    folderType: "Type",
+    folder: "Folder",
+    subfolder: "Subfolder (optional)",
+    downloadStarted: "Download started: {name}",
+    downloadDone: "Downloaded: {name}",
+    downloadFailed: "Download failed: {name}",
+    downloadCanceled: "Download canceled: {name}",
+    cancelDownload: "Cancel download",
+    noFolders: "ComfyUI has no folder for this model type.",
+    recreate: "Recreate in workflow…",
+    recreateHint: "Choose what goes where. Nothing is changed until you click “Apply”.",
+    apply: "Apply",
+    skip: "Skip",
+    newLoraLoaders: "New LoRA loader(s)",
+    asPromptSyntax: "As <lora:…> in the prompt",
+    lmReplaces: "replaces the LoRAs in this node",
+    missingLocal: "not available locally",
+    rowPrompt: "Prompt",
+    rowNegative: "Negative",
+    rowSampler: "Sampler",
+    rowSize: "Size",
+    rowClipSkip: "Clip skip",
+    perSettings: "per settings",
+    noTargetNode: "no suitable node",
+    recreateDone: "Applied to the workflow: {list}",
+    recreateNothing: "Nothing was applied.",
+    resolving: "Looking up resources…",
+    modelView: "Images made with {name}",
+    showModelImages: "Show images made with this model",
+    followingView: "People you follow",
+    following: "Feed of people you follow",
+    historyTitle: "Prompt history",
+    historyEmpty: "No prompts inserted yet. Everything you send to a node shows up here.",
+    historyClear: "Clear history",
+    prevItem: "Previous (←)",
+    nextItem: "Next (→)",
+    dragHint: "Drag onto the canvas: onto a Load Image node, a prompt node, or empty space",
   },
   de: {
     titleFavorites: "Civitai Favoriten",
@@ -342,6 +384,48 @@ const STRINGS = {
     trendingNeedsKey: "Trending-Tags und die Suche in allen Civitai-Tags brauchen einen API-Key (⚙).",
     noTagsYet: "In den geladenen Ergebnissen gibt es noch keine Tags.",
     normalWidth: "Zurück zur Seitenleiste",
+    localHave: "Lokal vorhanden: {name}",
+    localByName: "Vermutlich lokal vorhanden (gleicher Dateiname, Hash nicht geprüft): {name}",
+    localChecking: "Prüfe lokale Modellordner…",
+    download: "Herunterladen",
+    downloadTitle: "In ComfyUI herunterladen ({size})",
+    folderType: "Typ",
+    folder: "Ordner",
+    subfolder: "Unterordner (optional)",
+    downloadStarted: "Download gestartet: {name}",
+    downloadDone: "Heruntergeladen: {name}",
+    downloadFailed: "Download fehlgeschlagen: {name}",
+    downloadCanceled: "Download abgebrochen: {name}",
+    cancelDownload: "Download abbrechen",
+    noFolders: "ComfyUI hat keinen Ordner für diesen Modelltyp.",
+    recreate: "Im Workflow nachbauen…",
+    recreateHint: "Wähle, was wohin soll. Geändert wird erst, wenn du auf „Übernehmen“ klickst.",
+    apply: "Übernehmen",
+    skip: "Überspringen",
+    newLoraLoaders: "Neue LoRA-Loader",
+    asPromptSyntax: "Als <lora:…> in den Prompt",
+    lmReplaces: "ersetzt die LoRAs in diesem Node",
+    missingLocal: "lokal nicht vorhanden",
+    rowPrompt: "Prompt",
+    rowNegative: "Negativ",
+    rowSampler: "Sampler",
+    rowSize: "Auflösung",
+    rowClipSkip: "Clip Skip",
+    perSettings: "laut Einstellungen",
+    noTargetNode: "kein passender Node",
+    recreateDone: "In den Workflow übernommen: {list}",
+    recreateNothing: "Es wurde nichts übernommen.",
+    resolving: "Suche Ressourcen…",
+    modelView: "Bilder mit {name}",
+    showModelImages: "Bilder mit diesem Modell zeigen",
+    followingView: "Leute, denen du folgst",
+    following: "Feed der Leute, denen du folgst",
+    historyTitle: "Prompt-Verlauf",
+    historyEmpty: "Noch keine Prompts übernommen. Alles, was du in einen Node schickst, erscheint hier.",
+    historyClear: "Verlauf leeren",
+    prevItem: "Vorheriges (←)",
+    nextItem: "Nächstes (→)",
+    dragHint: "Auf die Arbeitsfläche ziehen: auf einen Load-Image-Node, einen Prompt-Node oder eine freie Stelle",
   },
 };
 
@@ -505,28 +589,493 @@ function setNodeText(node, text) {
 function imageWidget(node) {
   return node?.widgets?.find((w) => w.name === "image" && Array.isArray(w.options?.values)) || null;
 }
-function findOrCreateLoadImage() {
-  const sel = Object.values(app.canvas?.selected_nodes || {}).find(imageWidget);
-  if (sel) return sel;
-  const existing = graphNodes().find((n) => n.type === "LoadImage" && imageWidget(n)) || graphNodes().find(imageWidget);
-  if (existing) return existing;
+/** pos: canvas position for a new node (drag & drop); without it an existing Load Image node is reused. */
+function findOrCreateLoadImage(pos = null) {
+  if (!pos) {
+    const sel = Object.values(app.canvas?.selected_nodes || {}).find(imageWidget);
+    if (sel) return sel;
+    const existing = graphNodes().find((n) => n.type === "LoadImage" && imageWidget(n)) || graphNodes().find(imageWidget);
+    if (existing) return existing;
+  }
   const LG = window.LiteGraph;
   const node = LG?.createNode?.("LoadImage");
   if (!node) throw new Error("LoadImage node not available");
   // middle of the visible canvas (the left part may be covered by the sidebar)
   const ds = app.canvas.ds;
   const rect = app.canvas.canvas.getBoundingClientRect();
-  node.pos = [(rect.width * 0.55) / ds.scale - ds.offset[0] - node.size[0] / 2, (rect.height * 0.35) / ds.scale - ds.offset[1]];
+  node.pos = pos ? [pos[0], pos[1]] : [(rect.width * 0.55) / ds.scale - ds.offset[0] - node.size[0] / 2, (rect.height * 0.35) / ds.scale - ds.offset[1]];
   app.graph.add(node);
   try {
     app.canvas.selectNode(node);
   } catch {}
   return node;
 }
+function isSamplerNode(n) {
+  return n.widgets?.some((w) => w.name === "steps") && n.widgets?.some((w) => w.name === "cfg");
+}
 function findSampler() {
   const sel = Object.values(app.canvas?.selected_nodes || {});
-  const isSampler = (n) => n.widgets?.some((w) => w.name === "steps") && n.widgets?.some((w) => w.name === "cfg");
-  return sel.find(isSampler) || graphNodes().find(isSampler) || null;
+  return sel.find(isSamplerNode) || graphNodes().find(isSamplerNode) || null;
+}
+
+/* ------------------------------------------------- models: local / download */
+/** Civitai model type -> ComfyUI folder types (first = default download target). */
+const MODEL_FOLDERS = {
+  Checkpoint: ["checkpoints", "diffusion_models"],
+  LORA: ["loras"],
+  LoCon: ["loras"],
+  DoRA: ["loras"],
+  TextualInversion: ["embeddings"],
+  VAE: ["vae"],
+  Upscaler: ["upscale_models"],
+  Controlnet: ["controlnet"],
+  Hypernetwork: ["hypernetworks"],
+};
+const LORA_TYPES = new Set(["lora", "locon", "dora", "lycoris"]);
+function resourceGroup(type) {
+  const tt = String(type || "").toLowerCase();
+  if (tt === "checkpoint" || tt === "model") return "ckpt";
+  if (LORA_TYPES.has(tt)) return "lora";
+  return "other";
+}
+function formatSize(kb) {
+  if (!kb) return "?";
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  return kb > 1024 * 1024 ? `${(kb / 1024 / 1024).toFixed(2)} GB` : `${Math.round(kb / 1024)} MB`;
+}
+/** File name without folder and extension (what <lora:…> syntax uses). */
+function fileStem(name) {
+  return String(name || "")
+    .split(/[\\/]/)
+    .pop()
+    .replace(/\.[^.]+$/, "");
+}
+
+/** Resolved resources per image (Civitai doesn't change them). */
+const resourceCache = new Map();
+function resourceQuery(item) {
+  const meta = item.meta || {};
+  const ids = new Set(item.modelVersionIds || []);
+  for (const r of [...arr(meta.civitaiResources), ...arr(meta.additionalResources)]) if (Number.isInteger(r?.modelVersionId)) ids.add(r.modelVersionId);
+  const hashes = new Set();
+  for (const r of arr(meta.resources)) if (typeof r?.hash === "string") hashes.add(r.hash);
+  for (const hv of Object.values(meta.hashes || {})) if (typeof hv === "string") hashes.add(hv);
+  if (typeof meta["Model hash"] === "string") hashes.add(meta["Model hash"]);
+  return { ids, hashes };
+}
+async function resolveResources(item, domain) {
+  if (resourceCache.has(item.id)) return resourceCache.get(item.id);
+  const { ids, hashes } = resourceQuery(item);
+  if (!ids.size && !hashes.size) return [];
+  const params = new URLSearchParams({ versionIds: [...ids].join(","), hashes: [...hashes].join(","), domain });
+  const resolved = (await fetchJson(`${API}/resources?${params}`)).resources || [];
+  resourceCache.set(item.id, resolved);
+  return resolved;
+}
+/** {versionId: {type, name, by}} for the resources that exist in ComfyUI's model folders. */
+async function localMatches(resolved) {
+  const resources = resolved
+    .filter((r) => MODEL_FOLDERS[r.type])
+    .map((r) => ({ key: String(r.versionId), hashes: r.file?.sha256 ? [r.file.sha256, ...r.hashes] : r.hashes, sizeKB: r.file?.sizeKB, fileName: r.file?.name }));
+  if (!resources.length) return {};
+  try {
+    return (await postJson(`${API}/local`, { resources })).matches || {};
+  } catch {
+    return {};
+  }
+}
+
+/** Background downloads (run on the ComfyUI server; polled while any is running). */
+const downloads = {
+  jobs: new Map(), // versionId -> job
+  listeners: new Set(),
+  timer: null,
+  get(versionId) {
+    return this.jobs.get(Number(versionId)) || null;
+  },
+  async start(body, domain) {
+    const job = await postJson(`${API}/download?domain=${encodeURIComponent(domain)}`, body);
+    this.jobs.set(Number(job.versionId), job);
+    toast("info", t("downloadStarted", { name: job.name }));
+    this.emit(false);
+    this.poll();
+    return job;
+  },
+  async cancel(job) {
+    try {
+      await postJson(`${API}/download/${job.id}`, undefined, "DELETE");
+    } catch {}
+  },
+  poll() {
+    if (this.timer) return;
+    const tick = async () => {
+      let list = [];
+      try {
+        list = (await fetchJson(`${API}/downloads`)).jobs || [];
+      } catch {}
+      let finished = false;
+      for (const job of list) {
+        const prev = this.jobs.get(Number(job.versionId));
+        if (prev?.status === "running" && job.status !== "running") {
+          finished = true;
+          if (job.status === "done") toast("success", t("downloadDone", { name: job.name }));
+          else if (job.status === "canceled") toast("info", t("downloadCanceled", { name: job.name }));
+          else toast("error", t("downloadFailed", { name: job.name }), job.error || "");
+        }
+        if (prev?.id !== job.id && prev?.status === "running") continue; // an older job of the same version
+        this.jobs.set(Number(job.versionId), job);
+      }
+      if (finished) {
+        try {
+          await app.refreshComboInNodes?.();
+        } catch {}
+      }
+      this.emit(finished);
+      this.timer = list.some((j) => j.status === "running") ? setTimeout(tick, 1000) : null;
+    };
+    this.timer = setTimeout(tick, 300);
+  },
+  emit(finished) {
+    for (const fn of this.listeners) fn(finished);
+  },
+};
+
+/* ------------------------------------------------- recreate: graph helpers */
+function comboValues(w) {
+  const v = w?.options?.values;
+  try {
+    return typeof v === "function" ? v() : Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+/** Nodes with a combo widget offering this exact file (any loader, core or custom). */
+function nodesWithFile(name) {
+  const out = [];
+  for (const node of graphNodes()) {
+    for (const w of node.widgets || []) {
+      if (w.type === "combo" && comboValues(w).includes(name)) {
+        out.push({ node, widget: w });
+        break;
+      }
+    }
+  }
+  return out;
+}
+/** LoRA Manager's loaders: a "text" widget with <lora:…> syntax synced to a "loras" list widget. */
+function isLoraManagerNode(node) {
+  const names = new Set((node.widgets || []).map((w) => w.name));
+  return names.has("text") && names.has("loras") && /LoraManager/i.test(node.type || node.comfyClass || "");
+}
+function setWidget(node, w, value) {
+  w.value = value;
+  try {
+    w.callback?.(value, app.canvas, node);
+  } catch {}
+  node.onWidgetChanged?.(w.name, value, undefined, w);
+}
+function setStrengths(node, weight) {
+  if (weight == null) return;
+  for (const w of node.widgets || []) if (typeof w.value === "number" && /strength|weight/i.test(w.name)) setWidget(node, w, weight);
+}
+function setLoraManagerLoras(node, loras) {
+  const text = node.inputWidget || node.widgets.find((w) => w.name === "text");
+  const code = loras.map((l) => `<lora:${fileStem(l.name)}:${l.weight ?? 1}>`).join(" ");
+  text.value = code;
+  try {
+    text.callback?.(code);
+  } catch {}
+  // switch every listed entry on, with the image's strength
+  const lw = node.lorasWidget || node.widgets.find((w) => w.name === "loras");
+  if (Array.isArray(lw?.value)) {
+    const byStem = new Map(loras.map((l) => [fileStem(l.name).toLowerCase(), l.weight ?? 1]));
+    const next = lw.value.map((e) => {
+      const w = byStem.get(String(e.name || "").toLowerCase());
+      return w == null ? e : { ...e, active: true, strength: w, clipStrength: w };
+    });
+    lw.value = next;
+    try {
+      lw.callback?.(next);
+    } catch {}
+  }
+}
+function inputSlot(node, name) {
+  return node.inputs?.findIndex((i) => i.name === name) ?? -1;
+}
+function outputSlot(node, type) {
+  return node.outputs?.findIndex((o) => o.type === type) ?? -1;
+}
+/** The node at the start of the sampler's MODEL chain (checkpoint / UNET loader). */
+function modelRoot() {
+  const sampler = findSampler();
+  if (!sampler) return null;
+  let node = sampler;
+  for (let hop = 0; hop < 20; hop++) {
+    const i = node.inputs?.find((x) => x.type === "MODEL" && x.link != null);
+    const link = i ? getLink(i.link) : null;
+    const origin = link ? app.graph.getNodeById(link.origin_id) : null;
+    if (!origin) return node === sampler ? null : node;
+    node = origin;
+  }
+  return node;
+}
+/** Insert LoraLoader nodes right after the model root and rewire its consumers through them. */
+function insertLoraChain(root, loras) {
+  const LG = window.LiteGraph;
+  const mSlot = outputSlot(root, "MODEL");
+  if (mSlot < 0) throw new Error("no MODEL output");
+  const cSlot = outputSlot(root, "CLIP");
+  const consumers = (slot) =>
+    (root.outputs[slot]?.links || [])
+      .map(getLink)
+      .filter(Boolean)
+      .map((l) => [app.graph.getNodeById(l.target_id), l.target_slot])
+      .filter(([n]) => n);
+  const modelUsers = consumers(mSlot);
+  const clipUsers = cSlot >= 0 ? consumers(cSlot) : [];
+  let prevM = [root, mSlot];
+  let prevC = cSlot >= 0 ? [root, cSlot] : null;
+  let y = root.pos[1] + root.size[1] + 60;
+  loras.forEach((l) => {
+    const node = LG.createNode(prevC ? "LoraLoader" : "LoraLoaderModelOnly");
+    // stacked below the model loader, where there is usually room
+    node.pos = [root.pos[0], y];
+    y += node.size[1] + 50;
+    app.graph.add(node);
+    const w = node.widgets.find((x) => x.name === "lora_name");
+    if (w) setWidget(node, w, l.name);
+    setStrengths(node, l.weight ?? 1);
+    prevM[0].connect(prevM[1], node, inputSlot(node, "model"));
+    if (prevC) prevC[0].connect(prevC[1], node, inputSlot(node, "clip"));
+    prevM = [node, outputSlot(node, "MODEL")];
+    if (prevC) prevC = [node, outputSlot(node, "CLIP")];
+  });
+  for (const [n, slot] of modelUsers) prevM[0].connect(prevM[1], n, slot);
+  if (prevC) for (const [n, slot] of clipUsers) prevC[0].connect(prevC[1], n, slot);
+}
+/** The latent node feeding the sampler (or any node with width + height). */
+function hasSizeWidgets(n) {
+  return n.widgets?.some((w) => w.name === "width" && typeof w.value === "number") && n.widgets?.some((w) => w.name === "height" && typeof w.value === "number");
+}
+/**
+ * Where an image size can be set. width/height may be widgets of the node itself, or inputs
+ * fed by another node (primitive / int nodes, Resolution Selector, …): then the source is set.
+ * -> [{node (the consumer), label, preview(w, h), apply(w, h)}]
+ */
+function sizeTargets() {
+  const out = [];
+  for (const node of graphNodes()) {
+    const linked = (name) => node.inputs?.find((i) => i.name === name && i.link != null);
+    const wIn = linked("width");
+    const hIn = linked("height");
+    if (!wIn && !hIn) {
+      if (!hasSizeWidgets(node)) continue;
+      const set = (w, hh) => {
+        setWidget(node, node.widgets.find((x) => x.name === "width"), w);
+        setWidget(node, node.widgets.find((x) => x.name === "height"), hh);
+      };
+      out.push({ node, label: nodeLabel(node), preview: (w, hh) => `${w} × ${hh}`, apply: set });
+      continue;
+    }
+    if (!wIn || !hIn) continue;
+    const src = (input) => {
+      const l = getLink(input.link);
+      const origin = l && app.graph.getNodeById(l.origin_id);
+      return origin ? { origin, outName: origin.outputs?.[l.origin_slot]?.name } : null;
+    };
+    const ws = src(wIn);
+    const hs = src(hIn);
+    if (!ws || !hs) continue;
+    // Resolution Selector (aspect ratio + megapixels): closest equivalent
+    if (ws.origin === hs.origin && isResolutionSelector(ws.origin)) {
+      const rs = ws.origin;
+      out.push({
+        node,
+        label: `${nodeLabel(node)} ← ${nodeLabel(rs)}`,
+        preview: (w, hh) => {
+          const r = resolutionSelectorValues(rs, w, hh);
+          return `${r.ratio}, ${r.mp} MP ≈ ${r.w} × ${r.h}`;
+        },
+        apply: (w, hh) => {
+          const r = resolutionSelectorValues(rs, w, hh);
+          setWidget(rs, rs.widgets.find((x) => x.name === "aspect_ratio"), r.ratio);
+          setWidget(rs, rs.widgets.find((x) => x.name === "megapixels"), r.mp);
+        },
+      });
+      continue;
+    }
+    // plain number sources: a widget named like the output, or the node's only number widget
+    const numWidget = ({ origin, outName }) => {
+      const nums = (origin.widgets || []).filter((x) => typeof x.value === "number");
+      return nums.find((x) => x.name === outName) || (nums.length === 1 ? nums[0] : null);
+    };
+    const ww = numWidget(ws);
+    const hw = numWidget(hs);
+    if (!ww || !hw || (ww === hw && ws.origin === hs.origin)) continue;
+    const via = ws.origin === hs.origin ? nodeLabel(ws.origin) : `${nodeLabel(ws.origin)} + ${nodeLabel(hs.origin)}`;
+    out.push({
+      node,
+      label: `${nodeLabel(node)} ← ${via}`,
+      preview: (w, hh) => `${w} × ${hh}`,
+      apply: (w, hh) => {
+        setWidget(ws.origin, ww, w);
+        setWidget(hs.origin, hw, hh);
+      },
+    });
+  }
+  return out;
+}
+function isResolutionSelector(n) {
+  const names = new Set((n.widgets || []).map((w) => w.name));
+  return names.has("aspect_ratio") && names.has("megapixels");
+}
+/** Same math as ComfyUI's ResolutionSelector: nearest listed aspect ratio + megapixels for w × h. */
+function resolutionSelectorValues(node, w, hh) {
+  const ratioW = node.widgets.find((x) => x.name === "aspect_ratio");
+  const options = comboValues(ratioW)
+    .map((v) => {
+      const m = /^(\d+)\s*:\s*(\d+)/.exec(String(v));
+      return m ? { v, a: Number(m[1]), b: Number(m[2]) } : null;
+    })
+    .filter(Boolean);
+  const target = Math.log(w / hh);
+  const best = options.reduce((acc, o) => (!acc || Math.abs(Math.log(o.a / o.b) - target) < Math.abs(Math.log(acc.a / acc.b) - target) ? o : acc), null);
+  const mpW = node.widgets.find((x) => x.name === "megapixels");
+  const min = mpW?.options?.min ?? 0.1;
+  const max = mpW?.options?.max ?? 16;
+  const mp = Math.min(max, Math.max(min, Math.round(((w * hh) / 1048576) * 100) / 100));
+  const multiple = node.widgets.find((x) => x.name === "multiple")?.value || 8;
+  if (!best) return { ratio: ratioW?.value, mp, w, h: hh };
+  const scale = Math.sqrt((mp * 1048576) / (best.a * best.b));
+  return {
+    ratio: best.v,
+    mp,
+    w: Math.round((best.a * scale) / multiple) * multiple,
+    h: Math.round((best.b * scale) / multiple) * multiple,
+  };
+}
+function latentNode() {
+  const hasSize = hasSizeWidgets;
+  const sampler = findSampler();
+  const i = sampler?.inputs?.find((x) => /latent/i.test(x.name) && x.link != null);
+  const origin = i ? app.graph.getNodeById(getLink(i.link)?.origin_id) : null;
+  if (origin && hasSize(origin)) return origin;
+  return graphNodes().find((n) => hasSize(n) && /latent/i.test(n.type)) || null;
+}
+/** A1111 sampler name -> ComfyUI sampler_name + scheduler. */
+const SAMPLER_MAP = {
+  "euler a": "euler_ancestral",
+  euler: "euler",
+  lms: "lms",
+  heun: "heun",
+  dpm2: "dpm_2",
+  "dpm2 a": "dpm_2_ancestral",
+  "dpm++ 2s a": "dpmpp_2s_ancestral",
+  "dpm++ 2m": "dpmpp_2m",
+  "dpm++ sde": "dpmpp_sde",
+  "dpm++ 2m sde": "dpmpp_2m_sde",
+  "dpm++ 3m sde": "dpmpp_3m_sde",
+  "dpm fast": "dpm_fast",
+  "dpm adaptive": "dpm_adaptive",
+  ddim: "ddim",
+  ddpm: "ddpm",
+  unipc: "uni_pc",
+  lcm: "lcm",
+  "euler cfg++": "euler_cfg_pp",
+};
+function mapSampler(meta) {
+  let name = String(meta.sampler || "").trim();
+  if (!name) return {};
+  let scheduler = meta.scheduler ? String(meta.scheduler).toLowerCase().replace(/ /g, "_") : null;
+  const m = /\s+(karras|exponential|sgm uniform|simple|beta|normal|ddim uniform)$/i.exec(name);
+  if (m) {
+    scheduler = scheduler || m[1].toLowerCase().replace(/ /g, "_");
+    name = name.slice(0, m.index);
+  }
+  const key = name.toLowerCase();
+  const a1111 = key in SAMPLER_MAP && /[A-Z ]/.test(name);
+  const sampler = SAMPLER_MAP[key] || key.replace(/[ +]+/g, (x) => (x.includes("+") ? "pp" : "_"));
+  // A1111 names without a suffix use the "automatic" (= normal) schedule
+  return { sampler, scheduler: scheduler || (a1111 ? "normal" : null) };
+}
+function parseSize(item) {
+  const meta = item.meta || {};
+  const m = /^(\d+)\s*x\s*(\d+)$/i.exec(String(meta.Size || ""));
+  if (m) return [Number(m[1]), Number(m[2])];
+  if (meta.width && meta.height) return [Number(meta.width), Number(meta.height)];
+  if (item.width && item.height) return [Number(item.width), Number(item.height)];
+  return null;
+}
+
+/* ------------------------------------------------------- prompt history */
+const HISTORY_MAX = 50;
+/** Prompts sent to nodes, newest first; stored on the ComfyUI server (history.json). */
+const promptHistory = {
+  items: null,
+  listeners: new Set(),
+  timer: null,
+  async load() {
+    if (this.items) return this.items;
+    try {
+      this.items = (await fetchJson(`${API}/history`)).items || [];
+    } catch {
+      this.items = [];
+    }
+    return this.items;
+  },
+  async add(item, what) {
+    const meta = item.meta || {};
+    if (!meta.prompt && !meta.negativePrompt) return;
+    await this.load();
+    const entry = {
+      id: item.id,
+      at: Date.now(),
+      what, // "pos" | "neg" | "both" | "recreate"
+      type: item.type,
+      username: item.username || "",
+      pageUrl: item.pageUrl,
+      url: item.url,
+      thumbUrl: item.thumbUrl,
+      previewUrl: item.previewUrl,
+      posterUrl: item.posterUrl,
+      width: item.width,
+      height: item.height,
+      nsfwLevel: item.nsfwLevel,
+      baseModel: item.baseModel,
+      modelVersionIds: item.modelVersionIds,
+      meta: {
+        prompt: String(meta.prompt || "").slice(0, 4000),
+        negativePrompt: String(meta.negativePrompt || "").slice(0, 2000),
+        seed: meta.seed,
+        steps: meta.steps,
+        cfgScale: meta.cfgScale,
+        sampler: meta.sampler,
+        scheduler: meta.scheduler,
+        Size: meta.Size,
+        clipSkip: meta.clipSkip,
+        Model: meta.Model,
+      },
+    };
+    this.items = [entry, ...this.items.filter((x) => x.id !== item.id)].slice(0, HISTORY_MAX);
+    this.save();
+  },
+  clear() {
+    this.items = [];
+    this.save();
+  },
+  save() {
+    for (const fn of this.listeners) fn();
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => postJson(`${API}/history`, { items: this.items }).catch(() => {}), 500);
+  },
+};
+function timeAgo(ts) {
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  const fmt = new Intl.RelativeTimeFormat(locale(), { numeric: "auto" });
+  if (s < 60) return fmt.format(-Math.round(s), "second");
+  if (s < 3600) return fmt.format(-Math.round(s / 60), "minute");
+  if (s < 86400) return fmt.format(-Math.round(s / 3600), "hour");
+  return fmt.format(-Math.round(s / 86400), "day");
 }
 
 /* ------------------------------------------------------- shared state */
@@ -691,6 +1240,8 @@ class BrowserPanel {
       cloudOpen: !!p.cloudOpen,
       advancedOpen: !!p.advancedOpen,
       user: "", // discovery: currently shown user (not persisted)
+      model: null, // discovery: {id, name} of the model version whose images are shown (not persisted)
+      following: !!p.following, // discovery: feed of the users the key's owner follows
       // prompt targets are shared by both tabs: "" = auto, "none", or a node id
       posTarget: typeof common.posTarget === "string" ? common.posTarget : "",
       negTarget: typeof common.negTarget === "string" ? common.negTarget : "",
@@ -706,11 +1257,12 @@ class BrowserPanel {
     this.knownTags = new Map(); // id -> {id, name, count}: tags seen in loaded results
     this.root = this.build();
     shared.listeners.add((origin) => this.onSharedChange(origin));
+    downloads.listeners.add((finished) => this.onDownloadsChanged(finished));
   }
 
   persist() {
     this.updateAdvancedBadge?.();
-    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "cloudOpen", "advancedOpen"];
+    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "cloudOpen", "advancedOpen", "following"];
     savePrefs(this.mode, Object.fromEntries(keys.map((k) => [k, this.state[k]])));
   }
 
@@ -898,6 +1450,14 @@ class BrowserPanel {
         "div",
         { class: "cf-header" },
         h("span", { class: "cf-title" }, h("i", { class: icon }), " ", title),
+        this.isFav
+          ? null
+          : (this.followBtn = h(
+              "button",
+              { class: "cf-icon" + (this.state.following ? " active" : ""), title: t("following"), onclick: () => this.setFollowing(!this.state.following) },
+              h("i", { class: "pi pi-users" })
+            )),
+        h("button", { class: "cf-icon", title: t("historyTitle"), onclick: () => this.toggleHistory() }, h("i", { class: "pi pi-history" })),
         (this.fullBtn = h("button", { class: "cf-icon", title: t("fullWidth"), onclick: () => this.toggleFull() }, h("i", { class: "pi pi-window-maximize" }))),
         h("button", { class: "cf-icon", title: t("refresh"), onclick: () => this.init(true) }, h("i", { class: "pi pi-refresh" })),
         h("button", { class: "cf-icon", title: t("settings"), onclick: () => (this.settingsBox.hidden = !this.settingsBox.hidden) }, h("i", { class: "pi pi-cog" }))
@@ -1201,7 +1761,7 @@ class BrowserPanel {
     }
     this.persist();
     this.renderChips();
-    if (!this.detailView.hidden) this.closeDetail();
+    if (!this.detailView.hidden) this.closeDetail(true);
     this.reload();
     this.renderCloud();
   }
@@ -1229,7 +1789,7 @@ class BrowserPanel {
   searchChanged(tagsChanged) {
     this.persist();
     this.renderChips();
-    if (!this.detailView.hidden) this.closeDetail();
+    if (!this.detailView.hidden) this.closeDetail(true);
     if (tagsChanged && !this.isFav) this.reload();
     else this.renderGrid();
     this.renderCloud();
@@ -1501,9 +2061,37 @@ class BrowserPanel {
     }
   }
 
+  /** Discovery: images made with one model version (opened from the resources list). */
+  showModel(resource) {
+    if (this.isFav) {
+      // the feed lives in the Discovery tab
+      let disc = panels.get("discovery");
+      if (!disc) panels.set("discovery", (disc = new BrowserPanel("discovery")));
+      disc.state.model = { id: resource.versionId, name: `${resource.modelName}${resource.versionName ? ` – ${resource.versionName}` : ""}` };
+      disc.state.user = "";
+      const store = app.extensionManager?.sidebarTab;
+      if (store && store.activeSidebarTabId !== "civitai-discovery") store.toggleSidebarTab?.("civitai-discovery");
+      if (disc.initialized) disc.reload();
+      return;
+    }
+    this.state.model = { id: resource.versionId, name: `${resource.modelName}${resource.versionName ? ` – ${resource.versionName}` : ""}` };
+    this.state.user = "";
+    this.reload();
+  }
+  setFollowing(on) {
+    if (on && !shared.config?.hasKey) return toast("warn", t("needKey"));
+    this.state.following = on;
+    this.followBtn?.classList.toggle("active", on);
+    this.persist();
+    this.reload();
+  }
+
   backFromUser() {
     if (!this.isFav) {
-      this.state.user = "";
+      // leave the innermost view: user, then model, then the followed feed
+      if (this.state.user) this.state.user = "";
+      else if (this.state.model) this.state.model = null;
+      else if (this.state.following) this.setFollowing(false);
       this.reload();
       return;
     }
@@ -1609,8 +2197,15 @@ class BrowserPanel {
   /* ---------- loading ---------- */
   async reload() {
     const user = this.currentUser();
-    this.userBar.hidden = !user;
-    this.userLabel.textContent = user ? t("userView", { user }) : "";
+    const scope = user
+      ? t("userView", { user })
+      : !this.isFav && this.state.model
+        ? t("modelView", { name: this.state.model.name })
+        : !this.isFav && this.state.following
+          ? t("followingView")
+          : "";
+    this.userBar.hidden = !scope;
+    this.userLabel.textContent = scope;
     this.updateKeyStatus();
     this.items = [];
     this.cursor = null;
@@ -1620,7 +2215,7 @@ class BrowserPanel {
     this.autoPages = 0;
     this.removedIds.clear();
     this.resetGrid();
-    this.closeDetail();
+    this.closeDetail(true);
     this.updateBaseModelOptions();
     await this.loadPage();
   }
@@ -1645,13 +2240,23 @@ class BrowserPanel {
       params.set("query", this.state.textFilter);
       return `${API}/search?${params}`;
     }
+    if (this.state.model) {
+      // a model's gallery: all time, otherwise most models show nothing
+      params.set("modelVersionId", String(this.state.model.id));
+      params.set("period", "AllTime");
+      return `${API}/feed?${params}`;
+    }
     params.set("period", this.state.period);
+    if (this.state.following && !this.state.user) {
+      params.set("source", "followed");
+      return `${API}/images?${params}`;
+    }
     return `${API}/feed?${params}`;
   }
 
   /** Discovery text search runs on Civitai where enabled; otherwise prompts are filtered locally. */
   useSemantic() {
-    return !this.isFav && !!this.state.textFilter && !shared.semanticUnavailable;
+    return !this.isFav && !!this.state.textFilter && !shared.semanticUnavailable && !this.state.model && !(this.state.following && !this.state.user);
   }
 
   async loadPage(auto = false) {
@@ -1809,6 +2414,20 @@ class BrowserPanel {
       {
         class: "cf-tile" + (item.nsfwLevel >= 4 ? " cf-nsfw" : ""),
         style: { aspectRatio: ratio },
+        draggable: "true",
+        ondragstart: (e) => {
+          hideTooltip();
+          dragItem = { panel: this, item };
+          e.dataTransfer.effectAllowed = "copy";
+          e.dataTransfer.setData("application/x-civitai-discovery", String(item.id));
+          e.dataTransfer.setData("text/uri-list", item.pageUrl || "");
+          // leave the canvas visible when the panel covers it (full width)
+          if (this.full) setTimeout(() => this.root.classList.add("cf-dragging"), 0);
+        },
+        ondragend: () => {
+          dragItem = null;
+          this.root.classList.remove("cf-dragging");
+        },
         onclick: () => {
           hideTooltip();
           this.openDetail(item);
@@ -1879,7 +2498,25 @@ class BrowserPanel {
   }
 
   /* ---------- detail view ---------- */
-  openDetail(item) {
+  /** ←/→ in the detail view: the neighbouring visible artwork (loads the next page at the end). */
+  async stepDetail(dir) {
+    const list = this.items.filter((i) => this.matches(i));
+    let idx = list.findIndex((i) => i.id === this.detailItem?.id);
+    if (idx < 0) return;
+    if (dir > 0 && idx === list.length - 1 && this.hasMore) {
+      await this.loadPage(false);
+      const more = this.items.filter((i) => this.matches(i));
+      if (more.length > list.length) return this.openDetail(more[idx + 1]);
+      return;
+    }
+    const next = list[idx + dir];
+    if (next) this.openDetail(next);
+  }
+  openDetail(item, fromHistory = false) {
+    this.historyOpen = false;
+    this.returnToHistory = fromHistory;
+    this.detailItem = item;
+    this.detailView.querySelectorAll("video").forEach((v) => v.pause());
     const meta = item.meta || null;
     const media =
       item.type === "video"
@@ -1895,7 +2532,7 @@ class BrowserPanel {
           { class: "cf-block-head" },
           h("span", {}, label),
           h("button", { class: "cf-btn small", onclick: () => copyText(text) }, h("i", { class: "pi pi-copy" }), " ", t("copy")),
-          h("button", { class: "cf-btn small primary", onclick: () => this.insertText(text, kind) }, t("toNode"))
+          h("button", { class: "cf-btn small primary", onclick: () => this.insertText(text, kind) && this.recordHistory(item, kind === "negative" ? "neg" : "pos") }, t("toNode"))
         ),
         h("div", { class: "cf-text" }, text)
       );
@@ -1937,6 +2574,7 @@ class BrowserPanel {
     const resBlock = h("div", { class: "cf-block", hidden: true });
     this.renderResources(resBlock, ckptCell, item, null);
     this.loadResources(item, resBlock, ckptCell);
+    downloads.poll();
     if (!meta) {
       body.push(h("div", { class: "cf-message" }, t("noMeta")));
       body.push(tagsBlock, resBlock);
@@ -1988,6 +2626,8 @@ class BrowserPanel {
         "div",
         { class: "cf-detail-head" },
         h("button", { class: "cf-btn", onclick: () => this.closeDetail() }, t("back")),
+        h("button", { class: "cf-icon", title: t("prevItem"), onclick: () => this.stepDetail(-1) }, h("i", { class: "pi pi-chevron-left" })),
+        h("button", { class: "cf-icon", title: t("nextItem"), onclick: () => this.stepDetail(1) }, h("i", { class: "pi pi-chevron-right" })),
         h(
           "span",
           { class: "cf-grow" },
@@ -2004,47 +2644,153 @@ class BrowserPanel {
     this.detailView.hidden = false;
     this.openPicker = () => this.togglePicker(item, pickerBox, saveBtn);
   }
-  /** Fetch the image's resources (checkpoint, LoRAs, ...) from Civitai. */
+  /** Fetch the image's resources (checkpoint, LoRAs, ...) from Civitai, then check the local model folders. */
   async loadResources(item, block, cell) {
     const token = (this.detailToken = (this.detailToken || 0) + 1);
-    const meta = item.meta || {};
-    const ids = new Set(item.modelVersionIds || []);
-    for (const r of [...arr(meta.civitaiResources), ...arr(meta.additionalResources)]) if (Number.isInteger(r?.modelVersionId)) ids.add(r.modelVersionId);
-    const hashes = new Set();
-    for (const r of arr(meta.resources)) if (typeof r?.hash === "string") hashes.add(r.hash);
-    for (const hv of Object.values(meta.hashes || {})) if (typeof hv === "string") hashes.add(hv);
-    if (typeof meta["Model hash"] === "string") hashes.add(meta["Model hash"]);
-    if (!ids.size && !hashes.size) return this.renderResources(block, cell, item, []);
-    const params = new URLSearchParams({ versionIds: [...ids].join(","), hashes: [...hashes].join(","), domain: this.state.domain });
+    const st = (this.resState = { item, block, cell, resolved: null, local: null, forms: new Map() });
     let resolved = [];
     try {
-      resolved = (await fetchJson(`${API}/resources?${params}`)).resources || [];
+      resolved = await resolveResources(item, this.state.domain);
     } catch {}
-    if (token === this.detailToken) this.renderResources(block, cell, item, resolved);
+    if (token !== this.detailToken) return;
+    st.resolved = resolved;
+    this.renderResources(block, cell, item, resolved, null);
+    await this.refreshLocal(token);
+  }
+  async refreshLocal(token = this.detailToken) {
+    const st = this.resState;
+    if (!st?.resolved) return;
+    const local = await localMatches(st.resolved);
+    if (token !== this.detailToken || st !== this.resState) return;
+    st.local = local;
+    this.renderResources(st.block, st.cell, st.item, st.resolved, local);
+  }
+  /** A download started/finished somewhere: update the open detail view. */
+  onDownloadsChanged(finished) {
+    const st = this.resState;
+    if (!st?.resolved || this.detailView.hidden || !st.block.isConnected) return;
+    if (finished) this.refreshLocal();
+    else this.renderResources(st.block, st.cell, st.item, st.resolved, st.local);
   }
 
-  /** resolved: null while loading, else the list from /resources. */
-  renderResources(block, cell, item, resolved) {
-    const meta = item.meta || {};
-    const groupOf = (type) => {
-      const tt = String(type || "").toLowerCase();
-      if (tt === "checkpoint" || tt === "model") return "ckpt";
-      if (["lora", "locon", "dora", "lycoris"].includes(tt)) return "lora";
-      return "other";
+  /** Status / download control for one resolved resource. local: null = still checking. */
+  resourceStatus(r, local, onForm) {
+    if (!MODEL_FOLDERS[r.type]) return null;
+    if (local === null) return h("span", { class: "cf-local checking", title: t("localChecking") }, "…");
+    const hit = local[String(r.versionId)];
+    if (hit)
+      return h(
+        "span",
+        { class: "cf-local" + (hit.by === "name" ? " byname" : ""), title: t(hit.by === "name" ? "localByName" : "localHave", { name: `${hit.type}/${hit.name}` }) },
+        h("i", { class: "pi pi-check" })
+      );
+    const job = downloads.get(r.versionId);
+    if (job?.status === "running") {
+      const pct = job.total ? Math.floor((job.done / job.total) * 100) : null;
+      return h(
+        "span",
+        { class: "cf-dl-progress" },
+        h("i", { class: "pi pi-download" }),
+        pct != null ? ` ${pct}%` : " …",
+        h("button", { class: "cf-icon-btn", title: t("cancelDownload"), onclick: () => downloads.cancel(job) }, h("i", { class: "pi pi-times" }))
+      );
+    }
+    if (!r.file?.downloadUrl) return h("span", { class: "cf-local missing", title: t("missingLocal") }, "–");
+    return h(
+      "button",
+      { class: "cf-icon-btn cf-dl-btn", title: t("downloadTitle", { size: formatSize(r.file.sizeKB) }), onclick: onForm },
+      h("i", { class: "pi pi-download" })
+    );
+  }
+
+  /** Inline form: which ComfyUI folder to download a model into. */
+  downloadForm(r, onDone) {
+    const types = MODEL_FOLDERS[r.type] || [];
+    const common = loadPrefs("common");
+    const memo = common.downloadTargets?.[`${r.type}|${r.baseModel}`] || common.downloadTargets?.[r.type] || {};
+    const typeSel = h("select", {}, types.map((ft) => h("option", { value: ft }, ft)));
+    typeSel.value = types.includes(memo.type) ? memo.type : types[0];
+    const folderSel = h("select", {});
+    const subdir = h("input", { type: "text", placeholder: t("subfolder"), value: memo.subdir || "" });
+    const listId = `cf-subdirs-${r.versionId}`;
+    const datalist = h("datalist", { id: listId });
+    subdir.setAttribute("list", listId);
+    const go = h("button", { class: "cf-btn primary" }, h("i", { class: "pi pi-download" }), " ", t("download"));
+    const loadFolders = async () => {
+      folderSel.replaceChildren(h("option", {}, t("loading")));
+      go.disabled = true;
+      try {
+        const { folders, subdirs } = await fetchJson(`${API}/model_folders?type=${encodeURIComponent(typeSel.value)}`);
+        if (!folders.length) {
+          folderSel.replaceChildren(h("option", { value: "" }, t("noFolders")));
+          return;
+        }
+        folderSel.replaceChildren(...folders.map((f) => h("option", { value: f.path }, `${f.path} (${f.count})`)));
+        const best = folders.find((f) => f.path === memo.folder) || [...folders].sort((a, b) => b.count - a.count)[0];
+        folderSel.value = best.path;
+        datalist.replaceChildren(...subdirs.map((d) => h("option", { value: d })));
+        go.disabled = false;
+      } catch (e) {
+        folderSel.replaceChildren(h("option", { value: "" }, String(e.message || e)));
+      }
     };
+    typeSel.addEventListener("change", loadFolders);
+    go.addEventListener("click", async () => {
+      if (!folderSel.value) return;
+      go.disabled = true;
+      const target = { type: typeSel.value, folder: folderSel.value, subdir: subdir.value.trim() };
+      try {
+        await downloads.start({ versionId: r.versionId, ...target }, this.state.domain);
+        const c = loadPrefs("common");
+        savePrefs("common", { ...c, downloadTargets: { ...(c.downloadTargets || {}), [r.type]: target, [`${r.type}|${r.baseModel}`]: target } });
+        onDone?.();
+      } catch (e) {
+        go.disabled = false;
+        toast("error", t("downloadFailed", { name: r.file?.name || r.modelName }), String(e.message || e));
+      }
+    });
+    loadFolders();
+    return h(
+      "div",
+      { class: "cf-dl-form" },
+      h("div", { class: "cf-hint" }, `${r.file?.name || ""} · ${formatSize(r.file?.sizeKB)}${r.file?.fp ? ` · ${r.file.fp}` : ""}`),
+      types.length > 1 ? h("label", { class: "cf-field" }, h("span", {}, t("folderType")), typeSel) : null,
+      h("label", { class: "cf-field" }, h("span", {}, t("folder")), folderSel),
+      h("label", { class: "cf-field" }, h("span", {}, t("subfolder")), subdir, datalist),
+      h("div", { class: "cf-row" }, go)
+    );
+  }
+
+  /** resolved: null while loading, else the list from /resources. local: null while checking. */
+  renderResources(block, cell, item, resolved, local = null) {
+    const meta = item.meta || {};
+    const st = this.resState;
     const groups = { ckpt: [], lora: [], other: [] };
     const covered = new Set(); // lowercase names/hashes already represented by a resolved entry
     for (const r of resolved || []) {
       const w = resourceWeight(r, meta);
-      groups[groupOf(r.type)].push(
-        h(
-          "li",
-          {},
-          h("a", { href: r.url, target: "_blank", rel: "noopener", title: r.baseModel }, r.modelName, r.versionName ? h("span", { class: "cf-ver" }, ` – ${r.versionName}`) : ""),
-          w != null && groupOf(r.type) !== "ckpt" ? h("span", { class: "cf-weight" }, ` ${w}`) : null,
-          groupOf(r.type) === "other" ? h("span", { class: "cf-tag" }, r.type) : null
-        )
+      const g = resourceGroup(r.type);
+      const toggleForm = () => {
+        if (!st) return;
+        if (st.forms.has(r.versionId)) st.forms.delete(r.versionId);
+        else st.forms.set(r.versionId, this.downloadForm(r, () => (st.forms.delete(r.versionId), this.onDownloadsChanged(false))));
+        this.renderResources(block, cell, item, resolved, local);
+      };
+      const li = h(
+        "li",
+        {},
+        h("a", { href: r.url, target: "_blank", rel: "noopener", title: r.baseModel }, r.modelName, r.versionName ? h("span", { class: "cf-ver" }, ` – ${r.versionName}`) : ""),
+        w != null && g !== "ckpt" ? h("span", { class: "cf-weight" }, ` ${w}`) : null,
+        g === "other" ? h("span", { class: "cf-tag" }, r.type) : null
       );
+      li.append(
+        h("button", { class: "cf-icon-btn cf-res-images", title: t("showModelImages"), onclick: () => this.showModel(r) }, h("i", { class: "pi pi-images" }))
+      );
+      const status = this.resourceStatus(r, local, toggleForm);
+      if (status) li.append(status);
+      const form = st?.forms.get(r.versionId);
+      if (form && !local?.[String(r.versionId)] && downloads.get(r.versionId)?.status !== "running") li.append(form);
+      groups[g].push(li);
       r.hashes.forEach((x) => covered.add(x.toLowerCase()));
       covered.add(r.modelName.toLowerCase());
       covered.add(r.versionName.toLowerCase());
@@ -2052,14 +2798,14 @@ class BrowserPanel {
     // metadata entries Civitai couldn't resolve: show as plain text
     for (const r of collectResources(meta)) {
       if (covered.has(String(r.hash || "").toLowerCase()) || covered.has(String(r.name).toLowerCase())) continue;
-      groups[groupOf(r.type)].push(h("li", { class: "cf-unresolved" }, r.name, r.weight != null ? h("span", { class: "cf-weight" }, ` ${r.weight}`) : null));
+      groups[resourceGroup(r.type)].push(h("li", { class: "cf-unresolved" }, r.name, r.weight != null ? h("span", { class: "cf-weight" }, ` ${r.weight}`) : null));
     }
     const metaCkpt = meta.Model || meta.model;
     if (!groups.ckpt.length && metaCkpt && resolved) groups.ckpt.push(h("li", { class: "cf-unresolved" }, metaCkpt));
 
     // parameters table cell
-    if (resolved) {
-      const ck = (resolved || []).filter((r) => groupOf(r.type) === "ckpt");
+    if (resolved && cell) {
+      const ck = (resolved || []).filter((r) => resourceGroup(r.type) === "ckpt");
       if (ck.length) cell.replaceChildren(...ck.flatMap((r, i) => [i ? ", " : "", h("a", { href: r.url, target: "_blank", rel: "noopener" }, r.modelName, r.versionName ? ` – ${r.versionName}` : "")]));
       else if (metaCkpt) cell.replaceChildren(metaCkpt);
       else cell.closest("tr")?.remove();
@@ -2067,8 +2813,394 @@ class BrowserPanel {
 
     const section = (label, list) => (list.length ? [h("div", { class: "cf-res-label" }, label), h("ul", { class: "cf-res" }, list)] : []);
     const content = [...section(t("checkpoint"), groups.ckpt), ...section(t("loras"), groups.lora), ...section(t("otherResources"), groups.other)];
-    block.replaceChildren(h("div", { class: "cf-block-head" }, h("span", {}, t("resources")), resolved ? null : h("span", { class: "cf-hint" }, t("loading"))), ...content);
+    const recreateBtn = item.meta
+      ? h("button", { class: "cf-btn", onclick: () => this.openRecreate(item) }, h("i", { class: "pi pi-sitemap" }), " ", t("recreate"))
+      : null;
+    block.replaceChildren(
+      h("div", { class: "cf-block-head" }, h("span", {}, t("resources")), resolved ? null : h("span", { class: "cf-hint" }, t("loading"))),
+      ...content,
+      content.length && recreateBtn ? h("div", { class: "cf-actions" }, recreateBtn) : null
+    );
     block.hidden = !content.length && !!resolved;
+  }
+
+  /* ---------- recreate in workflow ---------- */
+  /** Dialog: map the image's checkpoint, LoRAs, prompts and parameters onto nodes of the current workflow. */
+  async openRecreate(item) {
+    closeRecreate();
+    const meta = item.meta || {};
+    const body = h("div", { class: "cf-modal-body" }, h("div", { class: "cf-hint" }, t("resolving")));
+    const applyBtn = h("button", { class: "cf-btn primary", disabled: true }, t("apply"));
+    const modal = h(
+      "div",
+      { class: "cf-modal-backdrop", onmousedown: (e) => e.target === modal && closeRecreate() },
+      h(
+        "div",
+        { class: "cf-modal" },
+        h("div", { class: "cf-modal-head" }, h("span", {}, t("recreate").replace(/…$/, "")), h("button", { class: "cf-icon-btn", onclick: closeRecreate }, h("i", { class: "pi pi-times" }))),
+        body,
+        h("div", { class: "cf-modal-foot" }, h("span", { class: "cf-hint" }, t("recreateHint")), h("button", { class: "cf-btn", onclick: closeRecreate }, t("cancel")), applyBtn)
+      )
+    );
+    document.body.append(modal);
+    activeRecreate = modal;
+
+    let resolved = [];
+    try {
+      resolved = await resolveResources(item, this.state.domain);
+    } catch {}
+    let local = await localMatches(resolved);
+    if (!modal.isConnected) return;
+
+    const forms = new Map();
+    const overrides = new Map(); // user choices survive re-renders (download progress)
+    let rows = [];
+    const render = () => {
+      rows = this.recreateRows(item, resolved, local);
+      for (const row of rows) {
+        row.key = `${row.kind}|${row.value}`;
+        const o = overrides.get(row.key);
+        if (!o) continue;
+        if (o.on != null && row.targets.length) row.on = o.on;
+        if (o.target && row.targets.some((x) => x.value === o.target)) row.target = o.target;
+      }
+      const table = h(
+        "div",
+        { class: "cf-rec" },
+        rows.map((row) => {
+          const cb = h("input", { type: "checkbox", checked: row.on, disabled: !row.targets.length });
+          cb.addEventListener("change", () => {
+            row.on = cb.checked;
+            overrides.set(row.key, { ...overrides.get(row.key), on: cb.checked });
+          });
+          const sel = row.targets.length
+            ? h(
+                "select",
+                {
+                  onchange: (e) => {
+                    row.target = e.target.value;
+                    overrides.set(row.key, { ...overrides.get(row.key), target: row.target });
+                    render(); // e.g. the LoRA Manager note depends on the target
+                  },
+                },
+                row.targets.map((o) => h("option", { value: o.value }, o.label))
+              )
+            : h("span", { class: "cf-hint" }, row.missing ? t("missingLocal") : t("noTargetNode"));
+          if (row.targets.length) sel.value = row.target;
+          let status = null;
+          if (row.resource) {
+            status = this.resourceStatus(row.resource, local, () => {
+              if (forms.has(row.resource.versionId)) forms.delete(row.resource.versionId);
+              else forms.set(row.resource.versionId, this.downloadForm(row.resource, () => (forms.delete(row.resource.versionId), render())));
+              render();
+            });
+          }
+          const form =
+            row.resource && !local[String(row.resource.versionId)] && downloads.get(row.resource.versionId)?.status !== "running"
+              ? forms.get(row.resource.versionId)
+              : null;
+          return h(
+            "div",
+            { class: "cf-rec-row" + (row.targets.length ? "" : " off") },
+            h("label", { class: "cf-rec-what" }, cb, h("span", { class: "cf-rec-kind" }, row.kind), h("span", { class: "cf-rec-value", title: row.value }, row.value)),
+            h("div", { class: "cf-rec-target" }, h("span", { class: "cf-rec-arrow" }, "→"), sel, status),
+            row.lora && row.target?.startsWith("lm:") ? h("div", { class: "cf-hint cf-rec-note" }, t("lmReplaces")) : null,
+            row.noteFor?.(row.target) ? h("div", { class: "cf-hint cf-rec-note" }, row.noteFor(row.target)) : null,
+            form
+          );
+        })
+      );
+      body.replaceChildren(table);
+      applyBtn.disabled = !rows.some((r) => r.targets.length);
+    };
+    render();
+    // a finished download makes the model selectable
+    const onDl = async (finished) => {
+      if (!modal.isConnected) return downloads.listeners.delete(onDl);
+      if (finished) local = await localMatches(resolved);
+      render();
+    };
+    downloads.listeners.add(onDl);
+    applyBtn.addEventListener("click", () => {
+      const done = this.applyRecreate(item, rows);
+      closeRecreate();
+      if (done.length) toast("success", t("recreateDone", { list: done.join(", ") }));
+      else toast("info", t("recreateNothing"));
+    });
+  }
+
+  /** Build the dialog rows with their possible targets and a sensible default each. */
+  recreateRows(item, resolved, local) {
+    const meta = item.meta || {};
+    const memo = loadPrefs("common").recreateTargets || {};
+    const rows = [];
+    const label = (n) => nodeLabel(n);
+    const skip = { value: "skip", label: t("skip") };
+    const nodeOpt = (n, value = String(n.id), suffix = "") => ({ value, label: label(n) + suffix, node: n });
+    /** The node chosen last time (same id + type), else one of the same type, else the fallback. */
+    const remembered = (m, opts, sameTypeOk = true) => {
+      if (!m?.type) return null;
+      const withNode = opts.filter((o) => o.node);
+      const exact = withNode.find((o) => String(o.node.id) === String(m.id) && o.node.type === m.type);
+      return (exact || (sameTypeOk ? withNode.find((o) => o.node.type === m.type) : null))?.value || null;
+    };
+    const getNode = (id) => app.graph.getNodeById(Number(id));
+
+    // checkpoint(s)
+    for (const r of resolved.filter((x) => resourceGroup(x.type) === "ckpt")) {
+      const hit = local[String(r.versionId)];
+      const cands = hit ? nodesWithFile(hit.name) : [];
+      const targets = cands.length ? [...cands.map((c) => nodeOpt(c.node)), skip] : [];
+      rows.push({
+        kind: t("checkpoint"),
+        value: `${r.modelName}${r.versionName ? ` – ${r.versionName}` : ""}`,
+        resource: r,
+        missing: !hit,
+        memoKey: "ckpt",
+        targets,
+        target: remembered(memo.ckpt, targets) || targets[0]?.value,
+        on: !!cands.length,
+        apply: (target) => {
+          const c = cands.find((x) => String(x.node.id) === target);
+          if (!c) return null;
+          setWidget(c.node, c.widget, hit.name);
+          return t("checkpoint");
+        },
+      });
+    }
+
+    // LoRAs: LoRA Manager loaders, any loader that lists the file, new LoraLoader nodes, or <lora:> prompt syntax
+    const loras = resolved.filter((x) => resourceGroup(x.type) === "lora");
+    const lmNodes = graphNodes().filter(isLoraManagerNode);
+    const root = modelRoot();
+    const canChain = !!(root && window.LiteGraph?.registered_node_types?.LoraLoader && outputSlot(root, "MODEL") >= 0);
+    const loraLoaders = graphNodes().filter((n) => !isLoraManagerNode(n) && n.widgets?.some((w) => w.name === "lora_name" && w.type === "combo"));
+    const usedNodes = new Set();
+    for (const r of loras) {
+      const hit = local[String(r.versionId)];
+      const weight = resourceWeight(r, meta) ?? 1;
+      const generic = hit ? nodesWithFile(hit.name).filter((c) => !isLoraManagerNode(c.node)).map((c) => c.node) : [];
+      const genericNodes = [...new Set([...generic, ...(hit ? loraLoaders : [])])];
+      const targets = [];
+      if (hit) {
+        for (const n of lmNodes) targets.push(nodeOpt(n, `lm:${n.id}`, " (LoRA Manager)"));
+        for (const n of genericNodes) targets.push(nodeOpt(n, `node:${n.id}`));
+        if (canChain) targets.push({ value: "new", label: t("newLoraLoaders") });
+      }
+      targets.push({ value: "prompt", label: t("asPromptSyntax") });
+      targets.push(skip);
+      // default: the node / kind of target used last time, else LoRA Manager > free loader > new loaders > prompt
+      const m = memo.lora || {};
+      const free = (o) => !o.value.startsWith("node:") || !usedNodes.has(o.value);
+      const ofKind = (k) => targets.filter((o) => o.value.startsWith(`${k}:`) && free(o));
+      const pick =
+        ((m.kind === "lm" || m.kind === "node") && targets.find((o) => o.value === remembered(m, ofKind(m.kind)))) ||
+        ((m.kind === "lm" || m.kind === "node") && ofKind(m.kind)[0]) ||
+        (m.kind && targets.find((o) => o.value === m.kind)) ||
+        ofKind("lm")[0] ||
+        ofKind("node")[0] ||
+        targets.find((o) => o.value === "new") ||
+        targets.find((o) => o.value === "prompt");
+      if (pick.value.startsWith("node:")) usedNodes.add(pick.value);
+      rows.push({
+        kind: "LoRA",
+        value: `${r.modelName}${r.versionName ? ` – ${r.versionName}` : ""} (${weight})`,
+        resource: r,
+        missing: !hit,
+        memoKey: "lora",
+        targets,
+        target: pick.value,
+        on: !!hit, // a missing LoRA would only break the prompt / loader
+        lora: { name: hit?.name || r.file?.name || r.modelName, weight },
+      });
+    }
+
+    // prompts: any text node; preselected: last choice, else the target from the settings
+    const textNodes = promptNodes();
+    const promptRow = (kind, text, rowLabel) => {
+      if (!text) return;
+      const pref = kind === "negative" ? this.state.negTarget : this.state.posTarget;
+      const fromSettings = resolveTarget(kind, pref);
+      const targets = textNodes.length
+        ? [...textNodes.map((n) => nodeOpt(n, String(n.id), n === fromSettings ? ` (${t("perSettings")})` : "")), skip]
+        : [];
+      const fallback = fromSettings === "none" ? "skip" : fromSettings ? String(fromSettings.id) : targets[0]?.value;
+      rows.push({ kind: rowLabel, value: text, memoKey: kind, targets, target: remembered(memo[kind], targets, false) || fallback /* positive and negative usually share a node type */, on: !!targets.length, prompt: kind });
+    };
+    promptRow("positive", meta.prompt, t("rowPrompt"));
+    promptRow("negative", meta.negativePrompt, t("rowNegative"));
+
+    // sampler settings
+    const samplers = graphNodes().filter(isSamplerNode);
+    if (samplers.length && (meta.seed != null || meta.steps != null || meta.cfgScale != null || meta.sampler)) {
+      const { sampler: sName, scheduler } = mapSampler(meta);
+      const parts = [
+        meta.seed != null ? `seed ${meta.seed}` : null,
+        meta.steps != null ? `${meta.steps} steps` : null,
+        meta.cfgScale != null ? `CFG ${meta.cfgScale}` : null,
+        sName ? `${sName}${scheduler ? ` / ${scheduler}` : ""}` : null,
+      ].filter(Boolean);
+      const targets = [...samplers.map((n) => nodeOpt(n)), skip];
+      rows.push({
+        kind: t("rowSampler"),
+        value: parts.join(", "),
+        memoKey: "sampler",
+        targets,
+        target: remembered(memo.sampler, targets) || String(findSampler()?.id ?? samplers[0].id),
+        on: true,
+        apply: (target) => {
+          const sampler = getNode(target);
+          if (!sampler) return null;
+          const ws = Object.fromEntries((sampler.widgets || []).map((w) => [w.name, w]));
+          const setNum = (name, v) => ws[name] && v != null && !Number.isNaN(Number(v)) && setWidget(sampler, ws[name], Number(v));
+          setNum("seed", meta.seed);
+          setNum("noise_seed", meta.seed);
+          // keep the seed for the next run instead of randomizing it
+          const ctl = ws.control_after_generate;
+          if (meta.seed != null && ctl && comboValues(ctl).includes("fixed")) setWidget(sampler, ctl, "fixed");
+          setNum("steps", meta.steps);
+          setNum("cfg", meta.cfgScale);
+          if (sName && ws.sampler_name && comboValues(ws.sampler_name).includes(sName)) setWidget(sampler, ws.sampler_name, sName);
+          if (scheduler && ws.scheduler && comboValues(ws.scheduler).includes(scheduler)) setWidget(sampler, ws.scheduler, scheduler);
+          return t("rowSampler");
+        },
+      });
+    }
+
+    // resolution: the node's own width/height, or the node feeding them (Resolution Selector, number nodes)
+    const size = parseSize(item);
+    if (size) {
+      const cands = sizeTargets();
+      const targets = cands.length ? [...cands.map((c) => ({ ...nodeOpt(c.node), label: c.label })), skip] : [];
+      const lat = latentNode();
+      const fed = cands.find((c) => lat && c.node === lat) || cands.find((c) => c.label.includes("←"));
+      rows.push({
+        kind: t("rowSize"),
+        value: `${size[0]} × ${size[1]}`,
+        memoKey: "size",
+        targets,
+        target: remembered(memo.size, targets) || (fed ? String(fed.node.id) : targets[0]?.value),
+        on: !!targets.length,
+        noteFor: (target) => {
+          const c = cands.find((x) => String(x.node.id) === target);
+          return c && c.label.includes("←") ? `→ ${c.preview(size[0], size[1])}` : null;
+        },
+        apply: (target) => {
+          const c = cands.find((x) => String(x.node.id) === target);
+          if (!c) return null;
+          c.apply(size[0], size[1]);
+          return t("rowSize");
+        },
+      });
+    }
+
+    // clip skip
+    const clipSkip = Number(meta.clipSkip ?? meta["Clip skip"]);
+    if (clipSkip > 1) {
+      const clipNodes = graphNodes().filter((n) => n.widgets?.some((w) => w.name === "stop_at_clip_layer"));
+      const targets = clipNodes.length ? [...clipNodes.map((n) => nodeOpt(n)), skip] : [];
+      rows.push({
+        kind: t("rowClipSkip"),
+        value: String(clipSkip),
+        memoKey: "clipSkip",
+        targets,
+        target: remembered(memo.clipSkip, targets) || targets[0]?.value,
+        on: !!targets.length,
+        apply: (target) => {
+          const n = getNode(target);
+          if (!n) return null;
+          setWidget(n, n.widgets.find((w) => w.name === "stop_at_clip_layer"), -clipSkip);
+          return t("rowClipSkip");
+        },
+      });
+    }
+    return rows;
+  }
+
+  /** Remember which node each kind of row went to, to preselect it next time. */
+  rememberRecreateTargets(active) {
+    const common = loadPrefs("common");
+    const next = { ...(common.recreateTargets || {}) };
+    for (const r of active) {
+      if (!r.memoKey) continue;
+      if (r.lora) {
+        const kind = r.target.startsWith("lm:") ? "lm" : r.target.startsWith("node:") ? "node" : r.target;
+        const node = kind === "lm" || kind === "node" ? app.graph.getNodeById(Number(r.target.split(":")[1])) : null;
+        next.lora = { kind, id: node?.id, type: node?.type };
+        continue;
+      }
+      const node = app.graph.getNodeById(Number(r.target));
+      if (node) next[r.memoKey] = { id: node.id, type: node.type };
+    }
+    savePrefs("common", { ...common, recreateTargets: next });
+  }
+
+  applyRecreate(item, rows) {
+    const done = [];
+    const active = rows.filter((r) => r.on && r.targets.length && r.target && r.target !== "skip");
+    this.rememberRecreateTargets(active);
+    // LoRAs grouped by target kind
+    const loraRows = active.filter((r) => r.lora);
+    const promptLoras = loraRows.filter((r) => r.target === "prompt").map((r) => r.lora);
+    const byLm = new Map();
+    for (const r of loraRows.filter((x) => x.target.startsWith("lm:"))) {
+      const id = r.target.slice(3);
+      if (!byLm.has(id)) byLm.set(id, []);
+      byLm.get(id).push(r.lora);
+    }
+    for (const [id, list] of byLm) {
+      const node = app.graph.getNodeById(Number(id));
+      if (node) {
+        setLoraManagerLoras(node, list);
+        done.push(`${list.length}× LoRA`);
+      }
+    }
+    for (const r of loraRows.filter((x) => x.target.startsWith("node:"))) {
+      const node = app.graph.getNodeById(Number(r.target.slice(5)));
+      const w = node?.widgets?.find((x) => x.type === "combo" && comboValues(x).includes(r.lora.name));
+      if (!w) continue;
+      setWidget(node, w, r.lora.name);
+      setStrengths(node, r.lora.weight);
+      done.push("LoRA");
+    }
+    const chain = loraRows.filter((x) => x.target === "new").map((r) => r.lora);
+    if (chain.length) {
+      try {
+        insertLoraChain(modelRoot(), chain);
+        done.push(`${chain.length}× LoraLoader`);
+      } catch (e) {
+        toast("error", t("newLoraLoaders"), String(e.message || e));
+      }
+    }
+    for (const r of active.filter((x) => x.apply && !x.lora)) {
+      const what = r.apply(r.target);
+      if (what) done.push(what);
+    }
+    // prompts, with <lora:…> syntax appended to the positive one if chosen
+    const loraSyntax = promptLoras.map((l) => `<lora:${fileStem(l.name)}:${l.weight}>`).join(" ");
+    const pos = active.find((r) => r.prompt === "positive");
+    const neg = active.find((r) => r.prompt === "negative");
+    const promptNode = (r) => r && app.graph.getNodeById(Number(r.target));
+    if (promptNode(pos)) {
+      setNodeText(promptNode(pos), loraSyntax ? `${item.meta.prompt} ${loraSyntax}` : item.meta.prompt);
+      done.push(t("rowPrompt"));
+    } else if (loraSyntax) {
+      const node = resolveTarget("positive", this.state.posTarget);
+      if (node && node !== "none") {
+        setNodeText(node, `${textWidget(node).value || ""} ${loraSyntax}`.trim());
+        done.push(t("rowPrompt"));
+      }
+    }
+    if (promptNode(neg)) {
+      setNodeText(promptNode(neg), item.meta.negativePrompt);
+      done.push(t("rowNegative"));
+    }
+    if (pos || neg) this.recordHistory(item, "both");
+    app.graph.setDirtyCanvas(true, true);
+    try {
+      app.graph.change?.();
+    } catch {}
+    return done;
   }
 
   /* ---------- reactions ---------- */
@@ -2126,7 +3258,14 @@ class BrowserPanel {
     }
   }
 
-  closeDetail() {
+  /** toGrid: always back to the grid (new results), not to the prompt history the detail came from. */
+  closeDetail(toGrid = false) {
+    if (this.returnToHistory && this.detailItem && !toGrid) {
+      this.returnToHistory = false;
+      return this.showHistory();
+    }
+    this.historyOpen = false;
+    this.returnToHistory = false;
     this.detailView.querySelectorAll("video").forEach((v) => v.pause());
     this.detailView.hidden = true;
     this.detailView.replaceChildren();
@@ -2299,13 +3438,114 @@ class BrowserPanel {
         this.imageToNode(item);
         break;
     }
+    if (ok && key !== "seed") this.recordHistory(item, key.startsWith("neg") ? "neg" : key.startsWith("pos") ? "pos" : "both");
+  }
+
+  /* ---------- prompt history ---------- */
+  recordHistory(item, what) {
+    promptHistory.add(item, what);
+  }
+  toggleHistory() {
+    if (this.historyOpen) return this.closeDetail();
+    this.showHistory();
+  }
+  async showHistory() {
+    this.detailItem = null;
+    this.historyOpen = true;
+    this.detailView.querySelectorAll("video").forEach((v) => v.pause());
+    const list = h("div", { class: "cf-history" }, h("div", { class: "cf-hint" }, t("loading")));
+    const clearBtn = h(
+      "button",
+      { class: "cf-btn small", onclick: () => promptHistory.clear() },
+      h("i", { class: "pi pi-trash" }),
+      " ",
+      t("historyClear")
+    );
+    this.detailView.replaceChildren(
+      h(
+        "div",
+        { class: "cf-detail-head" },
+        h("button", { class: "cf-btn", onclick: () => this.closeDetail() }, t("back")),
+        h("span", { class: "cf-grow cf-history-title" }, h("i", { class: "pi pi-history" }), " ", t("historyTitle")),
+        clearBtn
+      ),
+      h("div", { class: "cf-scroll" }, list)
+    );
+    this.listView.hidden = true;
+    this.detailView.hidden = false;
+    const render = () => {
+      if (!this.historyOpen) return promptHistory.listeners.delete(render);
+      const items = promptHistory.items || [];
+      clearBtn.disabled = !items.length;
+      if (!items.length) return list.replaceChildren(h("div", { class: "cf-message" }, t("historyEmpty")));
+      list.replaceChildren(
+        ...items.map((it) => {
+          const thumb =
+            it.type === "video"
+              ? h("img", { src: it.posterUrl || it.thumbUrl, alt: "", loading: "lazy" })
+              : h("img", { src: it.thumbUrl, alt: "", loading: "lazy" });
+          return h(
+            "div",
+            { class: "cf-hist-row" + (it.nsfwLevel >= 4 ? " cf-nsfw" : "") },
+            h("button", { class: "cf-hist-thumb", title: t("ctxDetails"), onclick: () => this.openDetail(it, true) }, thumb),
+            h(
+              "div",
+              { class: "cf-hist-body" },
+              h("div", { class: "cf-hist-prompt", title: it.meta.prompt }, it.meta.prompt || it.meta.negativePrompt),
+              h(
+                "div",
+                { class: "cf-hist-meta" },
+                [it.username ? `@${it.username}` : null, timeAgo(it.at), it.meta.seed != null ? `seed ${it.meta.seed}` : null].filter(Boolean).join(" · ")
+              ),
+              h(
+                "div",
+                { class: "cf-hist-actions" },
+                h("button", { class: "cf-btn small primary", onclick: () => this.insertBoth(it) }, t("applyBoth")),
+                it.meta.prompt ? h("button", { class: "cf-btn small", onclick: () => this.runAction("pos", it) }, t("ctxPositive")) : null,
+                it.meta.seed != null ? h("button", { class: "cf-btn small", title: t("ctxSeed"), onclick: () => this.applySampler(it.meta, ["seed"]) }, h("i", { class: "pi pi-hashtag" })) : null,
+                h("button", { class: "cf-btn small", title: t("copyAll"), onclick: () => copyText(formatA1111(it.meta)) }, h("i", { class: "pi pi-copy" }))
+              )
+            )
+          );
+        })
+      );
+    };
+    promptHistory.listeners.add(render);
+    await promptHistory.load();
+    render();
+  }
+  /** An artwork dropped on the canvas: image node -> image, text node -> prompt, sampler -> seed/steps/CFG, empty -> new Load Image. */
+  dropOnCanvas(item, node, pos) {
+    const meta = item.meta || {};
+    if (node && imageWidget(node)) {
+      if (item.type !== "image") return toast("warn", t("noData"));
+      return this.imageToNode(item, node);
+    }
+    if (node && textWidget(node)) {
+      // a node wired to a sampler's negative input gets the negative prompt
+      const isNeg = samplerConditioningNode("negative") === node;
+      const text = isNeg ? meta.negativePrompt : meta.prompt;
+      if (!text) return toast("warn", t("noData"));
+      setNodeText(node, text);
+      this.recordHistory(item, isNeg ? "neg" : "pos");
+      return toast("success", t("insertedInto", { node: nodeLabel(node) }));
+    }
+    if (node && isSamplerNode(node)) {
+      if (meta.seed == null && meta.steps == null) return toast("warn", t("noData"));
+      return this.applySampler(meta, ["seed", "steps", "cfg"], node);
+    }
+    if (!node) {
+      if (item.type !== "image") return toast("warn", t("noData"));
+      return this.imageToNode(item, null, pos);
+    }
+    toast("warn", t("noData"));
   }
   /** Download the original into ComfyUI's input folder and set it in a Load Image node. */
-  async imageToNode(item) {
+  async imageToNode(item, target = null, pos = null) {
     toast("info", t("imageLoading"));
     try {
       const { name } = await postJson(`${API}/image_to_input`, { url: item.url, id: item.id });
-      const node = findOrCreateLoadImage();
+      const node = target || findOrCreateLoadImage(pos);
       const w = imageWidget(node);
       if (!w.options.values.includes(name)) w.options.values.push(name);
       w.value = name;
@@ -2319,7 +3559,7 @@ class BrowserPanel {
     }
   }
   saveCommon() {
-    savePrefs("common", { posTarget: this.state.posTarget, negTarget: this.state.negTarget, quickAction: this.state.quickAction });
+    savePrefs("common", { ...loadPrefs("common"), posTarget: this.state.posTarget, negTarget: this.state.negTarget, quickAction: this.state.quickAction });
   }
 
   /* ---------- context menu ---------- */
@@ -2413,6 +3653,7 @@ class BrowserPanel {
     }
     const wf = extractWorkflow(meta);
     if (wf) add("pi-sitemap", t("loadWorkflow"), () => this.loadWorkflow(wf));
+    add("pi-sitemap", t("recreate"), () => this.openRecreate(item), !!item.meta);
     sep();
     add("pi-copy", t("ctxCopyPrompt"), () => copyText(meta.prompt), !!meta.prompt);
     add("pi-copy", t("ctxCopySeed"), () => copyText(String(meta.seed)), meta.seed != null);
@@ -2517,11 +3758,12 @@ class BrowserPanel {
     let done = false;
     if (item.meta?.prompt) done = this.insertText(item.meta.prompt, "positive", true) || done;
     if (item.meta?.negativePrompt) done = this.insertText(item.meta.negativePrompt, "negative", true) || done;
+    if (done) this.recordHistory(item, "both");
     if (!done && this.state.posTarget === "none" && this.state.negTarget === "none")
       toast("info", t("targetNone", { kind: `${t("prompt")} + ${t("negative")}` }));
   }
-  applySampler(meta, fields = ["seed", "steps", "cfg"]) {
-    const node = findSampler();
+  applySampler(meta, fields = ["seed", "steps", "cfg"], target = null) {
+    const node = target || findSampler();
     if (!node) {
       toast("warn", t("noSampler"));
       return false;
@@ -2746,6 +3988,11 @@ document.addEventListener("scroll", hideTooltip, true);
 
 /* -------------------------------------------------------- context menu */
 let activeMenu = null;
+let activeRecreate = null;
+function closeRecreate() {
+  activeRecreate?.remove();
+  activeRecreate = null;
+}
 function closeContextMenu() {
   activeMenu?.remove();
   activeMenu = null;
@@ -2754,10 +4001,76 @@ document.addEventListener("mousedown", (e) => activeMenu && !activeMenu.contains
 document.addEventListener(
   "keydown",
   (e) => {
+    if (e.key === "Escape" && activeRecreate && !activeMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeRecreate();
+      return;
+    }
     if (e.key === "Escape" && activeMenu) {
       e.preventDefault(); // close the menu, not full width
       closeContextMenu();
     }
+  },
+  true
+);
+/* ---------- drag & drop onto the canvas ---------- */
+let dragItem = null; // {panel, item} while an artwork is dragged
+function canvasDropInfo(e) {
+  const canvas = app.canvas?.canvas;
+  if (!canvas || !dragItem) return null;
+  const r = canvas.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return null;
+  // the panel itself may lie above the canvas
+  const top = document.elementFromPoint(e.clientX, e.clientY);
+  if (top && top !== canvas && !canvas.contains(top) && top.closest?.(".civitai-favorites, .cf-modal-backdrop")) return null;
+  const ds = app.canvas.ds;
+  const pos = [(e.clientX - r.left) / ds.scale - ds.offset[0], (e.clientY - r.top) / ds.scale - ds.offset[1]];
+  const node = app.graph.getNodeOnPos?.(pos[0], pos[1], graphNodes()) || null;
+  return { pos, node };
+}
+window.addEventListener(
+  "dragover",
+  (e) => {
+    if (!dragItem) return;
+    if (canvasDropInfo(e)) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  },
+  true
+);
+window.addEventListener(
+  "drop",
+  (e) => {
+    if (!dragItem) return;
+    const info = canvasDropInfo(e);
+    const { panel, item } = dragItem;
+    dragItem = null;
+    panel.root.classList.remove("cf-dragging");
+    if (!info) return;
+    // ours: don't let ComfyUI treat it as a file/URL drop
+    e.preventDefault();
+    e.stopPropagation();
+    panel.dropOnCanvas(item, info.node, info.pos);
+  },
+  true
+);
+
+// detail view: ← / → browse, Esc back to the grid (not while typing, not under a menu/dialog)
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if (activeMenu || activeRecreate || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!["ArrowLeft", "ArrowRight", "Escape"].includes(e.key)) return;
+    const el = e.target;
+    if (el?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true']")) return;
+    const panel = [...panels.values()].find((p) => !p.detailView.hidden && p.root.isConnected && p.root.offsetParent !== null);
+    if (!panel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === "Escape") panel.closeDetail();
+    else panel.stepDetail(e.key === "ArrowRight" ? 1 : -1);
   },
   true
 );

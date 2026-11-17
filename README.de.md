@@ -17,6 +17,8 @@ In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen
 - **Basismodell**: z. B. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. Oben stehen die beliebtesten Familien, darunter alle weiteren. Civitai filtert direkt auf dem Server, deshalb funktioniert das auch bei seltenen Modellen.
 - Sortierung, Zeitraum und Basismodell stehen in einer Zeile. Darunter klappt **Erweitert** die übrigen Filter auf: Medientyp, Metadaten (mit, mit Prompt, ohne), Rating und NSFW verpixeln. Weichen dort Filter vom Standard ab, zeigt der eingeklappte Bereich ihre Anzahl, z. B. „Erweitert (1)“.
 - **Medientyp und Rating** werden ebenfalls auf dem Server gefiltert.
+- **Leute, denen du folgst** (👥-Button im Kopf): nur Werke der User, denen du auf Civitai folgst, mit derselben Sortierung, demselben Zeitraum und denselben Filtern. Braucht einen API-Key.
+- **Bilder mit einem Modell**: Der 🖼-Button neben einem Checkpoint oder einer LoRA in der Ressourcenliste zeigt die Galerie dieser Modellversion (gesamter Zeitraum). Klappt auch aus dem Favoriten-Tab, der dann zu Discovery wechselt.
 - Funktioniert auch ohne API-Key. Für Inhalte ab R über civitai.red und zum Speichern in Collections brauchst du aber einen Key.
 
 ### Civitai Favoriten
@@ -52,6 +54,14 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
 ### In beiden Panels
 - **Volle Breite**: Der Button ⧉ oben im Panel zieht das Panel über die ganze Arbeitsfläche. Ein zweiter Klick, Esc oder ein Wechsel des Seitenleisten-Tabs holt es zurück. In voller Breite gibt es mehr Spalten im Raster, und die Detailansicht zeigt das Bild links und die Infos rechts.
 - **Raster** mit Infinite Scroll. Videos spielen beim Drüberfahren ab, ein `META`-Badge markiert Einträge mit Metadaten.
+- **Ziehen und Ablegen** eines Werks auf die Arbeitsfläche:
+  - auf einen **Load-Image-Node**: setzt das Bild
+  - auf einen **Prompt-Node**: fügt den Prompt ein (den Negativ-Prompt, wenn der Node am `negative`-Eingang eines Samplers hängt)
+  - auf einen **Sampler**: setzt Seed, Steps und CFG
+  - auf eine freie Stelle: legt dort einen neuen Load-Image-Node an
+  
+  In voller Breite wird das Panel beim Ziehen durchsichtig, damit du an die Arbeitsfläche kommst.
+- **Prompt-Verlauf** (🕘-Button im Kopf): die letzten 50 Werke, deren Prompt du in einen Node geschickt hast, neueste zuerst. Der Verlauf gilt für beide Tabs und liegt auf dem Server (`history.json`). Jeden Eintrag kannst du erneut einfügen (Prompt + Negativ, nur Prompt, Seed), kopieren oder in der Detailansicht öffnen.
 - **Schnell-Button**: Beim Drüberfahren über ein Bild erscheint ein Button. Was er macht, stellst du in den Einstellungen (⚙) unter **Schnell-Button auf den Bildern** ein; Standard ist „Nur Prompt → Node“. Zur Wahl stehen alle Aktionen aus dem Kontextmenü, die etwas in den Workflow übernehmen.
 - **Tooltip**: Kurz über einem Bild verweilen zeigt eine kompakte Vorschau: Prompt (gekürzt), Negativ-Prompt, Parameter, Tags, Reaktionen und User.
 - **Kontextmenü** (Rechtsklick auf ein Bild):
@@ -63,10 +73,10 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   - Die Aktion des Schnell-Buttons ist im Menü fett markiert.
   - „Prompt + Negativ“ beachtet die Ziel-Einstellung „Keiner“. Die Einzel- und Seed-Kombinationen übernehmen immer; steht ein Ziel auf „Keiner“, gilt dafür Auto. Fehlt einem Bild der Seed, übernehmen die Kombinationen nur den Prompt.
   - Prompt kopieren, Seed kopieren, Alles kopieren
-  - Details öffnen, Werke von @User, Auf Civitai öffnen
+  - Im Workflow nachbauen…, Details öffnen, Werke von @User, Auf Civitai öffnen
   - **In Collection speichern** öffnet ein Untermenü mit all deinen Collections. Ein Häkchen zeigt, wo das Bild schon liegt, ein Klick fügt es hinzu oder entfernt es sofort. Das Menü bleibt offen, du kannst also mehrere Collections nacheinander anhaken. „Neue Collection…“ öffnet die Detailansicht mit dem Namensfeld.
   - Einträge, für die das Bild keine Daten hat, sind ausgegraut.
-- **Detailansicht** (Klick auf ein Bild):
+- **Detailansicht** (Klick auf ein Bild): **←/→** (oder die Pfeile neben „Zurück“) springen zum vorherigen bzw. nächsten Werk und laden am Ende nach. **Esc** führt zurück zum Raster.
   - **Reaktionen** unter dem Bild: 👍 ❤️ 😂 😢 mit Anzahl, dazu die Zahl der Kommentare (💬, öffnet die Seite auf Civitai). Mit API-Key sind deine eigenen Reaktionen hervorgehoben, und ein Klick setzt oder entfernt sie direkt auf Civitai. Dafür braucht der Key Schreibrechte („Social: write“); ein Key mit vollem Zugriff hat sie.
   - **In Collection speichern**: Liste deiner Collections mit Häkchen; ein Klick fügt das Bild hinzu oder entfernt es. Darunter kannst du direkt eine neue Collection anlegen, das Bild landet dann gleich darin.
   - Prompt und Negativ-Prompt, jeweils mit „Kopieren“ und „→ Node“
@@ -77,6 +87,33 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   - **Ressourcen**, gegliedert in Checkpoint, LoRAs (mit Gewicht) und Sonstige (Embeddings, Upscaler …), jeweils mit Link zu Civitai. Civitai liefert die Modellversionen eines Bildes mit. Fehlen sie, sucht das Plugin anhand der Hashes in den Metadaten. Was sich nicht zuordnen lässt, erscheint grau ohne Link.
   - alle Metadaten als JSON, Link zum Bild auf Civitai
   - Ein Klick auf den **Benutzernamen** zeigt alle Werke dieses Users.
+
+### Lokale Modelle, Downloads und „Im Workflow nachbauen“
+
+**In der Ressourcenliste** der Detailansicht siehst du bei jedem Checkpoint, jeder LoRA, jedem Embedding usw., ob du es schon hast:
+- **✓ grün**: in den Modellordnern von ComfyUI über den SHA256-Hash gefunden
+- **✓ gelb**: Es gibt eine Datei mit gleichem Namen, der Hash wurde aber nicht geprüft.
+- **⬇**: lokal nicht vorhanden. Ein Klick öffnet ein kleines Formular zum Herunterladen direkt in ComfyUI:
+  - **Modelltyp:** bei Checkpoints `checkpoints` oder `diffusion_models`
+  - **Modellordner:** alle Ordner, die ComfyUI kennt, inklusive `extra_model_paths.yaml`. Vorausgewählt ist der mit den meisten Modellen.
+  - **Unterordner:** optional
+  
+  Die Auswahl wird pro Modelltyp und Basismodell gespeichert. Der Fortschritt erscheint in der Liste, und die Datei wird danach mit dem SHA256 von Civitai abgeglichen. Civitai erlaubt Downloads nur mit API-Key.
+
+So findet das Plugin deine Modelle, ohne alles zu hashen: Es liest zuerst die Hashes, die andere Tools schon neben den Dateien ablegen (LoRA Manager `.metadata.json`, Stability Matrix `.cm-info.json`, `.sha256`-Dateien). Nur Dateien, deren Größe genau zur Civitai-Datei passt, werden einmalig gehasht und in `hashes.json` gespeichert.
+
+**Im Workflow nachbauen…** (Button unter den Ressourcen oder im Kontextmenü) öffnet einen Dialog. Er zeigt, was das Bild verwendet hat und wohin es in deinem aktuellen Workflow käme:
+
+| Zeile | Mögliche Ziele |
+|---|---|
+| Checkpoint | jeder Node, dessen Dropdown genau diese Datei anbietet (Load Checkpoint, UNET-Loader, eigene Loader …) |
+| LoRA | **LoRA-Manager-Loader** (`Lora Loader (LoraManager)`: Die LoRAs werden in sein Textfeld geschrieben und mit ihrem Gewicht aktiviert; ersetzt die LoRAs in diesem Node) · jeder Loader mit `lora_name`-Dropdown · **neue LoRA-Loader** (hinter dem Checkpoint eingefügt und mit allem verbunden, was vorher am Checkpoint hing) · `<lora:name:gewicht>` im Prompt · überspringen |
+| Prompt / Negativ | die Prompt-Ziele aus den Einstellungen |
+| Sampler | Seed (auf „fixed“ gestellt), Steps, CFG, Sampler und Scheduler (A1111-Namen wie „DPM++ 2M Karras“ werden übersetzt) |
+| Auflösung | der Latent-Node am Sampler. Kommen width/height aus einem anderen Node, wird dieser gesetzt: Zahlen-Nodes bekommen die genauen Werte, ein **Resolution Selector** das nächstliegende Seitenverhältnis und die Megapixel (der Dialog zeigt die resultierende Größe) |
+| Clip Skip | ein `CLIP Set Last Layer`-Node, falls vorhanden |
+
+Jede Zeile lässt sich abwählen oder umleiten. Geändert wird erst, wenn du auf **Übernehmen** klickst. Fehlende Modelle kannst du direkt im Dialog herunterladen, danach sind sie auswählbar. Fehlende LoRAs sind standardmäßig abgewählt. Die Nodes, in die du übernommen hast, merkt sich das Plugin und schlägt sie beim nächsten Mal wieder vor: denselben Node, wenn er im Workflow ist, sonst einen Node gleichen Typs. Bei Prompts gilt nur derselbe Node, sonst greifen die Prompt-Einstellungen.
 
 ### Welcher Node bekommt den Prompt?
 
@@ -119,7 +156,7 @@ Alle Panel-Einstellungen bleiben auch über einen Neustart von ComfyUI erhalten 
 - **API-Key** in `config.json`
 - **Dropdowns, Filter und Suche** (gewählte Collection, Sortierung, Zeitraum, Basismodell, Rating, Domain, NSFW-Unschärfe, gewählte Tags, Suchtext, Tag-Cloud und „Erweitert“ offen/zu, zuletzt angesehene User, Ziel-Nodes für Prompt/Negativ, Aktion des Schnell-Buttons) in `prefs.json`
 
-Beide Dateien liegen im Plugin-Ordner auf dem ComfyUI-Server. Der Browser hält nur eine Kopie für den Fall, dass der Server nicht erreichbar ist. Nicht gespeichert werden eine gerade offene User-Ansicht in Discovery und die volle Breite.
+Beide Dateien liegen im Plugin-Ordner auf dem ComfyUI-Server. Der Browser hält nur eine Kopie für den Fall, dass der Server nicht erreichbar ist. Der Prompt-Verlauf liegt separat in `history.json`. Nicht gespeichert werden eine gerade offene User- oder Modell-Ansicht in Discovery und die volle Breite.
 
 ### civitai.com vs. civitai.red
 
@@ -139,6 +176,7 @@ Civitai liefert Inhalte ab Rating R nur über **civitai.red** aus. Über civitai
 - **Checkpoint und LoRAs** kommen aus `GET /api/v1/model-versions/{id}` (für die `modelVersionIds` eines Bildes) bzw. `/api/v1/model-versions/by-hash/{hash}`. Die Ergebnisse speichert der ComfyUI-Server bis zum Neustart zwischen.
 - **Schreibzugriffe** laufen über die tRPC-Mutationen `collection.saveItem`, `collection.upsert` und `collection.delete`. Die öffentliche API kann Collections nur lesen.
 - Diese tRPC-Endpunkte sind intern und können sich ohne Ankündigung ändern. Bricht etwas, liegt es meist an [`civitai_client.py`](civitai_client.py).
+- **Downloads** akzeptieren nur Civitai-Download-URLs (`/api/download/models/…`) und schreiben nur in die Modellordner von ComfyUI. `..` im Pfad ist nicht erlaubt, und vorhandene Dateien werden nie überschrieben. Sie laufen als Hintergrund-Jobs auf dem Server; eine `.part`-Datei wird erst nach der SHA256-Prüfung umbenannt.
 - Alle Anfragen laufen über das ComfyUI-Backend (`/civitai_discovery/*`). Dadurch gibt es keine CORS-Probleme und der Key bleibt auf dem Server.
 - Der Metadaten-Filter arbeitet im Browser (die API bietet dafür keinen funktionierenden Filter). Bei Bedarf lädt das Plugin automatisch Seiten nach: höchstens 5 am Stück ohne Treffer, danach über „Mehr laden“.
 
@@ -149,6 +187,8 @@ Civitai liefert Inhalte ab Rating R nur über **civitai.red** aus. Über civitai
 | `__init__.py` | Einstiegspunkt für ComfyUI, `WEB_DIRECTORY` |
 | `civitai_routes.py` | HTTP-Routen im ComfyUI-Server, Speicherung des API-Keys |
 | `civitai_client.py` | Civitai-API-Client (REST + tRPC, Lesen und Schreiben) |
+| `local_models.py` | Welche Ressourcen lokal vorhanden sind (Hash-Abgleich, Cache in `hashes.json`) |
+| `downloads.py` | Downloads im Hintergrund in die Modellordner |
 | `web/civitai_discovery.js` | Beide Panels, Filter, Collection-Verwaltung, Einfügen in Nodes (DE/EN je nach ComfyUI-Sprache) |
 | `web/civitai_discovery.css` | Styles (nutzen die Theme-Variablen von ComfyUI) |
 | `web/base_models.json` | Zuordnung Basismodell → Familie („SDXL 1.0“ → „Stable Diffusion XL“), erzeugt aus Civitais `basemodel.constants.ts` |

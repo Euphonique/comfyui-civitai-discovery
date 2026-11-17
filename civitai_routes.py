@@ -22,6 +22,8 @@ from .civitai_client import (
 )
 from urllib.parse import urlparse
 
+from . import downloads, local_models
+
 PREFIX = "/civitai_discovery"
 
 log = logging.getLogger("civitai_discovery")
@@ -30,6 +32,9 @@ CONFIG_PATH = Path(__file__).parent / "config.json"
 # UI settings (dropdowns, filters, recent users) - separate from the key on purpose.
 PREFS_PATH = Path(__file__).parent / "prefs.json"
 PREFS_MAX_BYTES = 64 * 1024
+# prompts sent to nodes (prompt history), separate because prompts can be long
+HISTORY_PATH = Path(__file__).parent / "history.json"
+HISTORY_MAX_BYTES = 512 * 1024
 ENV_KEY = "CIVITAI_API_KEY"
 
 
@@ -71,6 +76,8 @@ def _mask(key: str) -> str:
 
 
 def _err(e: Exception) -> web.Response:
+    if isinstance(e, downloads.DownloadError):
+        return web.json_response({"error": str(e)}, status=400)
     status = e.status if isinstance(e, CivitaiError) else 500
     if not isinstance(e, CivitaiError):
         log.exception("Civitai Discovery: unexpected error")
@@ -155,6 +162,31 @@ async def set_prefs(request: web.Request) -> web.Response:
     return web.json_response({"ok": True})
 
 
+@routes.get(f"{PREFIX}/history")
+async def get_history(request: web.Request) -> web.Response:
+    try:
+        data = json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        data = []
+    return web.json_response({"items": data if isinstance(data, list) else []})
+
+
+@routes.post(f"{PREFIX}/history")
+async def set_history(request: web.Request) -> web.Response:
+    try:
+        body = await _json_body(request)
+        items = body.get("items")
+        if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
+            raise CivitaiError("Invalid history.", 400)
+        text = json.dumps(items, ensure_ascii=False)
+        if len(text.encode("utf-8")) > HISTORY_MAX_BYTES:
+            raise CivitaiError("History too large.", 413)
+        _write_atomic(HISTORY_PATH, text)
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response({"ok": True})
+
+
 # ------------------------------------------------------------------- reads
 @routes.get(f"{PREFIX}/collections")
 async def get_collections(request: web.Request) -> web.Response:
@@ -177,6 +209,10 @@ async def get_images(request: web.Request) -> web.Response:
             limit=_int(q.get("limit", 50), 50),
             browsing_level=level,
             sort=q.get("sort", "Newest"),
+            period=q.get("period", "AllTime"),
+            media_type=q.get("type") or None,
+            base_models=[b for b in (q.get("baseModels") or "").split(",") if b.strip()] or None,
+            tags=[_int(v) for v in (q.get("tags") or "").split(",") if v.strip()] or None,
         )
     except Exception as e:  # noqa: BLE001
         return _err(e)
@@ -200,6 +236,7 @@ async def get_feed(request: web.Request) -> web.Response:
             base_models=base_models or None,
             username=q.get("username") or None,
             tags=[_int(v) for v in (q.get("tags") or "").split(",") if v.strip()] or None,
+            model_version_id=_int(q.get("modelVersionId") or 0) or None,
         )
     except Exception as e:  # noqa: BLE001
         return _err(e)
@@ -328,6 +365,61 @@ async def get_resources(request: web.Request) -> web.Response:
     except Exception as e:  # noqa: BLE001
         return _err(e)
     return web.json_response({"resources": res})
+
+
+# ------------------------------------------------------ local models / downloads
+@routes.post(f"{PREFIX}/local")
+async def post_local(request: web.Request) -> web.Response:
+    """Which of these resources exist in ComfyUI's model folders?"""
+    try:
+        body = await _json_body(request)
+        res = [r for r in (body.get("resources") or []) if isinstance(r, dict)][:50]
+        matches = await local_models.lookup(res)
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response({"matches": matches})
+
+
+@routes.get(f"{PREFIX}/model_folders")
+async def get_model_folders(request: web.Request) -> web.Response:
+    try:
+        return web.json_response(downloads.folder_options(request.query.get("type", "")))
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+
+
+@routes.post(f"{PREFIX}/download")
+async def post_download(request: web.Request) -> web.Response:
+    try:
+        body = await _json_body(request)
+        version_id = _int(body.get("versionId"), 0)
+        resolved = await _client(request).get_resources([version_id], [])
+        file = (resolved[0].get("file") if resolved else None) or {}
+        if not file.get("downloadUrl"):
+            raise CivitaiError("Civitai offers no file for this model version.", 404)
+        r = resolved[0]
+        job = downloads.start(
+            url=file["downloadUrl"],
+            file={**file, "versionId": version_id},
+            ftype=str(body.get("type") or ""),
+            folder=str(body.get("folder") or ""),
+            subdir=str(body.get("subdir") or ""),
+            api_key=_api_key() or None,
+            label=f"{r.get('modelName', '')} {r.get('versionName', '')}".strip(),
+        )
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response(job)
+
+
+@routes.get(f"{PREFIX}/downloads")
+async def get_downloads(request: web.Request) -> web.Response:
+    return web.json_response({"jobs": downloads.jobs()})
+
+
+@routes.delete(f"{PREFIX}/download/{{job_id}}")
+async def delete_download(request: web.Request) -> web.Response:
+    return web.json_response({"canceled": downloads.cancel(request.match_info["job_id"])})
 
 
 # ------------------------------------------------------ collection editing

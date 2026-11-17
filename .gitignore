@@ -4,3 +4,5 @@ prefs.json
 __pycache__/
 *.pyc
 *.part
+hashes.json
+history.json
