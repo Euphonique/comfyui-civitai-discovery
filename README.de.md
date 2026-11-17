@@ -62,7 +62,7 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   
   In voller Breite wird das Panel beim Ziehen durchsichtig, damit du an die Arbeitsfläche kommst.
 - **Prompt-Verlauf** (🕘-Button im Kopf): die letzten 50 Werke, deren Prompt du in einen Node geschickt hast, neueste zuerst. Der Verlauf gilt für beide Tabs und liegt auf dem Server (`history.json`). Jeden Eintrag kannst du erneut einfügen (Prompt + Negativ, nur Prompt, Seed), kopieren oder in der Detailansicht öffnen.
-- **Schnell-Button**: Beim Drüberfahren über ein Bild erscheint ein Button. Was er macht, stellst du in den Einstellungen (⚙) unter **Schnell-Button auf den Bildern** ein; Standard ist „Nur Prompt → Node“. Zur Wahl stehen alle Aktionen aus dem Kontextmenü, die etwas in den Workflow übernehmen.
+- **Schnell-Button**: Beim Drüberfahren über ein Bild erscheint ein Button. Was er macht, stellst du in den Einstellungen (⚙) unter **Schnell-Button auf den Bildern** ein; Standard ist „Im Workflow nachbauen…“. Zur Wahl stehen alle Aktionen aus dem Kontextmenü, die etwas in den Workflow übernehmen.
 - **Tooltip**: Kurz über einem Bild verweilen zeigt eine kompakte Vorschau: Prompt (gekürzt), Negativ-Prompt, Parameter, Tags, Reaktionen und User.
 - **Kontextmenü** (Rechtsklick auf ein Bild):
   - Prompt + Negativ → Nodes, Prompt + Negativ + Seed

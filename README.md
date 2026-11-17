@@ -56,7 +56,7 @@ If a combination returns no results, the panel shows a notice with the buttons *
 - **Masonry grid** with infinite scroll. Videos play on hover, and a `META` badge marks items with metadata.
 - **Drag & drop** an artwork onto the canvas: onto a **Load Image** node it sets the image, onto a **prompt node** it inserts the prompt (the negative one if that node feeds a sampler's `negative` input), onto a **sampler** it sets seed/steps/CFG, and onto empty space it creates a new Load Image node there. In full width the panel fades out while dragging so you can reach the canvas.
 - **Prompt history** (🕘 button in the header): the last 50 artworks whose prompts you sent to a node, newest first, shared by both tabs and stored on the server (`history.json`). Each entry can be inserted again (prompt + negative, prompt only, seed), copied, or opened in the detail view.
-- **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Only prompt → node". All context-menu actions that insert something into the workflow are available.
+- **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Recreate in workflow…". All context-menu actions that insert something into the workflow are available.
 - **Tooltip**: Resting on an image for a moment shows a compact preview: prompt (shortened), negative prompt, parameters, tags, reactions and user.
 - **Context menu** (right-click on an image):
   - Prompt + negative → nodes, Prompt + negative + seed

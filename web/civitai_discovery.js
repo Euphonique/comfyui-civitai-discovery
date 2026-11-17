@@ -1245,7 +1245,7 @@ class BrowserPanel {
       // prompt targets are shared by both tabs: "" = auto, "none", or a node id
       posTarget: typeof common.posTarget === "string" ? common.posTarget : "",
       negTarget: typeof common.negTarget === "string" ? common.negTarget : "",
-      quickAction: typeof common.quickAction === "string" ? common.quickAction : "pos",
+      quickAction: typeof common.quickAction === "string" && ACTION_KEYS.some((a) => a.key === common.quickAction) ? common.quickAction : "recreate",
     };
     shared.domain = this.state.domain;
     this.items = [];
@@ -3390,7 +3390,7 @@ class BrowserPanel {
   /* ---------- prompt/seed actions (context menu + quick button) ---------- */
   actionsFor(item) {
     const meta = item.meta || {};
-    const has = { pos: !!meta.prompt, neg: !!meta.negativePrompt, seed: meta.seed != null, image: item.type === "image" && !!item.url };
+    const has = { meta: !!item.meta, pos: !!meta.prompt, neg: !!meta.negativePrompt, seed: meta.seed != null, image: item.type === "image" && !!item.url };
     return ACTION_KEYS.map((a) => ({
       ...a,
       // the first need is required; seed in a combination is applied when available
@@ -3401,6 +3401,7 @@ class BrowserPanel {
   runAction(key, item) {
     const meta = item.meta || {};
     // explicit single-prompt actions ignore a "None" target; "both" respects it like the button
+    if (key === "recreate") return this.openRecreate(item);
     const force = key !== "both" && key !== "bothSeed";
     let ok = false;
     const pos = () => meta.prompt && (ok = this.insertText(meta.prompt, "positive", !force, force) || ok);
@@ -3649,11 +3650,10 @@ class BrowserPanel {
     const sep = () => entries.length && entries[entries.length - 1] !== "-" && entries.push("-");
     for (const a of this.actionsFor(item)) {
       add(a.icon, t(a.label), a.run, a.enabled, a.key === this.state.quickAction);
-      if (a.key === "negSeed" || a.key === "sampler") sep();
+      if (a.key === "recreate" || a.key === "negSeed" || a.key === "sampler") sep();
     }
     const wf = extractWorkflow(meta);
     if (wf) add("pi-sitemap", t("loadWorkflow"), () => this.loadWorkflow(wf));
-    add("pi-sitemap", t("recreate"), () => this.openRecreate(item), !!item.meta);
     sep();
     add("pi-copy", t("ctxCopyPrompt"), () => copyText(meta.prompt), !!meta.prompt);
     add("pi-copy", t("ctxCopySeed"), () => copyText(String(meta.seed)), meta.seed != null);
@@ -3904,6 +3904,7 @@ function iconEl(icon) {
 
 /* --------------------------------------------------------------- actions */
 const ACTION_KEYS = [
+  { key: "recreate", label: "recreate", icon: "pi-sitemap", needs: ["meta"] },
   { key: "both", label: "ctxBoth", icon: "svg:forward", needs: ["pos"] },
   { key: "bothSeed", label: "ctxBothSeed", icon: "svg:forward", needs: ["pos", "seed"] },
   { key: "pos", label: "ctxPositive", icon: "svg:forward", needs: ["pos"] },
