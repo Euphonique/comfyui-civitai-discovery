@@ -11,6 +11,8 @@ In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen
 
 <img width="3038" height="1464" alt="Bildschirmfoto vom 2026-11-17 23-51-54" src="https://github.com/user-attachments/assets/967a3e79-cd95-49cf-ae65-5c588f0b8c5a" />
 
+*[mehr Screenshots](screenshots.md)*
+
 ## Funktionen
 
 ### Civitai Discovery
