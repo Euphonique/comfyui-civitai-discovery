@@ -1,151 +1,154 @@
-# Civitai Discovery für ComfyUI
+# Civitai Discovery for ComfyUI
 
-Ein ComfyUI-Plugin mit zwei neuen Panels in der linken Seitenleiste:
+*[Deutsche Version](README.de.md)*
 
-- 🧭 **Civitai Discovery**: der allgemeine Civitai-Feed mit Bildern und Videos
-- ❤ **Civitai Favoriten**: deine Collections und Reaktionen, inklusive Verwaltung der Collections
+A ComfyUI plugin that adds two new panels to the left sidebar:
 
-In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen und Bilder in deine Civitai-Collections speichern. Gespeichert wird direkt auf Civitai, nicht nur lokal.
+- 🧭 **Civitai Discovery**: the general Civitai feed of images and videos
+- ❤ **Civitai Favorites**: your collections and reactions, including collection management
 
-## Funktionen
+Both panels let you filter, insert prompts into prompt nodes with one click, and save images to your Civitai collections. Saving happens directly on Civitai, not just locally.
+
+## Features
 
 ### Civitai Discovery
-- **Sortierung**: meiste Reaktionen, meiste Kommentare, am häufigsten gesammelt, neueste
-- **Zeitraum**: Tag, Woche, Monat, Jahr, gesamt
-- **Basismodell**: z. B. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. Oben stehen die beliebtesten Familien, darunter alle weiteren. Civitai filtert direkt auf dem Server, deshalb funktioniert das auch bei seltenen Modellen.
-- Sortierung, Zeitraum und Basismodell stehen in einer Zeile. Darunter klappt **Erweitert** die übrigen Filter auf: Medientyp, Metadaten (mit, mit Prompt, ohne), Rating und NSFW verpixeln. Weichen dort Filter vom Standard ab, zeigt der eingeklappte Bereich ihre Anzahl, z. B. „Erweitert (1)“.
-- **Medientyp und Rating** werden ebenfalls auf dem Server gefiltert.
-- Funktioniert auch ohne API-Key. Für Inhalte ab R über civitai.red und zum Speichern in Collections brauchst du aber einen Key.
+- **Sort**: most reactions, most comments, most collected, newest
+- **Period**: day, week, month, year, all time
+- **Base model**: e.g. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. The most popular families are listed first, followed by all others. Civitai filters on the server, so this works for rare models too.
+- Sort, period and base model sit in one row. Below it, **Advanced** expands the remaining filters: media type, metadata (with metadata, with prompt, without), rating and blur NSFW. If any of them differ from the default, the collapsed section shows how many, e.g. "Advanced (1)".
+- **Media type and rating** are filtered on the server as well.
+- Works without an API key. You need a key for content rated R and above via civitai.red, and for saving to collections.
 
-### Civitai Favoriten
-- **Dropdown**: deine Collections, Collections, denen du folgst (markiert mit ↗), deine Reaktionen (👍 ❤️ 😂 😢) und zuletzt angesehene User
-- **Collections verwalten** über die Buttons neben dem Dropdown:
-  - **+** legt eine neue Collection an (Name, Beschreibung, Sichtbarkeit: privat, nicht gelistet, öffentlich)
-  - **✎** bearbeitet die gewählte Collection
-  - **🗑** löscht sie nach einer Rückfrage. Die Bilder selbst bleiben erhalten.
-  - Bearbeiten und Löschen gehen nur bei eigenen Collections.
-- **Filter**: Sortierung und Basismodell (mit Anzahl; nur Familien, die in der Ansicht vorkommen) in einer Zeile. Unter **Erweitert**: Medientyp, Metadaten, Rating und NSFW verpixeln.
+### Civitai Favorites
+- **Dropdown**: your collections, collections you follow (marked with ↗), your reactions (👍 ❤️ 😂 😢) and recently viewed users
+- **Manage collections** with the buttons next to the dropdown:
+  - **+** creates a new collection (name, description, visibility: private, unlisted, public)
+  - **✎** edits the selected collection
+  - **🗑** deletes it after a confirmation. The images themselves are kept.
+  - Editing and deleting only work for your own collections.
+- **Filters**: sort and base model (with counts; only families present in the current view) in one row. Under **Advanced**: media type, metadata, rating and blur NSFW.
 
-### Suche und Tags
-Das Suchfeld oben in beiden Panels versteht drei Arten von Eingaben, auch gemischt in einer Zeile, z. B. `#animal #forest @someone misty morning`:
+### Search and tags
+The search field at the top of both panels understands three kinds of input, which you can mix in one line, e.g. `#animal #forest @someone misty morning`:
 
-- **#Tag**: Mit `#` markierte Wörter werden als Tags übernommen. Mehrwortige Tags schreibst du mit Unterstrich oder Anführungszeichen: `#black_hair` oder `#"black hair"`. Beim Tippen von `#…` schlägt das Feld passende Tags vor. Der erste Enter vervollständigt den Tag, der zweite startet die Suche. Gibt es einen Tag nicht, wird das Wort als Text gesucht, und ein Hinweis erscheint.
-- **Tag ohne #**: Während du tippst, schlägt das Feld passende Tags vor. Das sind die Tags aus den geladenen Ergebnissen mit Anzahl, und mit API-Key zusätzlich alle passenden Tags auf Civitai. Gewählte Tags erscheinen als Chips und lassen sich mit × wieder entfernen. Mehrere Tags werden mit UND verknüpft.
-  - In **Discovery** filtert Civitai selbst. Die Suche läuft also über den ganzen Feed.
-  - In den **Favoriten** wird innerhalb der geladenen Bilder gefiltert.
-- **@User**: zeigt alle Werke dieses Users.
-- **Freier Text** (alle Wörter ohne `#` oder `@`), kombinierbar mit Tags, Basismodell, Medientyp und User:
-  - **Civitai-Textsuche:** Civitai hat eine neue semantische Bildersuche, schaltet sie aber nur für einen Teil der Accounts frei (schrittweise Einführung). Sie braucht außerdem einen API-Key mit vollem Zugriff. Ist sie für dich freigeschaltet, sucht Discovery damit über alle Bilder auf Civitai. Der Chip heißt dann „Suche „…““.
-  - **Fallback:** Lehnt Civitai die Suche ab, und in den Favoriten immer, filtert das Panel die Prompts der geladenen Bilder: Treffer müssen alle eingegebenen Wörter enthalten, bei Bedarf lädt das Panel Seiten nach. Der Chip heißt dann „Prompt enthält „…““.
-  - Besteht die Eingabe nur aus einem Wort ohne `#`/`@`, und es gibt einen Tag mit genau diesem Namen, wird der Tag übernommen. Für Freitext wähle in den Vorschlägen die letzte Zeile.
+- **#tag**: Words marked with `#` are used as tags. Write multi-word tags with an underscore or quotes: `#black_hair` or `#"black hair"`. While you type `#…`, the field suggests matching tags. The first Enter completes the tag, the second starts the search. If a tag doesn't exist, the word is searched as text instead and a notice appears.
+- **Tag without #**: While you type, the field suggests matching tags. These are the tags from the loaded results with their counts and, with an API key, all matching tags on Civitai. Selected tags appear as chips and can be removed with ×. Multiple tags are combined with AND.
+  - In **Discovery**, Civitai does the filtering, so the search covers the whole feed.
+  - In **Favorites**, filtering happens within the loaded images.
+- **@user**: shows all works by that user.
+- **Free text** (all words without `#` or `@`), combinable with tags, base model, media type and user:
+  - **Civitai text search:** Civitai has a new semantic image search, but only enables it for some accounts (gradual rollout). It also needs a full-access API key. If it is enabled for you, Discovery uses it to search all images on Civitai. The chip then reads "Search "…"".
+  - **Fallback:** If Civitai rejects the search, and always in Favorites, the panel filters the prompts of the loaded images: matches must contain all the words you entered, and the panel loads more pages as needed. The chip then reads "Prompt contains "…"".
+  - If the input is a single word without `#`/`@` and a tag with exactly that name exists, the tag is used. To search it as free text, pick the last line in the suggestions.
 
-Der Button **Tags** blendet eine **Tag-Cloud** ein:
-- **In den Ergebnissen**: die häufigsten Tags der angezeigten Bilder. Je größer der Tag, desto häufiger kommt er vor.
-- **Trending auf Civitai**: nur in Discovery und nur mit API-Key.
+The **Tags** button shows a **tag cloud**:
+- **In the results**: the most frequent tags of the displayed images. The bigger the tag, the more often it appears.
+- **Trending on Civitai**: Discovery only, and only with an API key.
 
-Ein Klick auf einen Tag übernimmt ihn in die Suche. In der **Detailansicht** stehen alle Tags eines Werks, und ein Klick darauf übernimmt ihn ebenfalls.
+Clicking a tag adds it to the search. The **detail view** lists all tags of an artwork, and clicking one adds it to the search too.
 
-Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Buttons **Zeitraum: Gesamt** und **Suche & Filter zurücksetzen**. Mehrere Tags plus kurzer Zeitraum plus Basismodell können schnell leer ausgehen.
+If a combination returns no results, the panel shows a notice with the buttons **Period: all time** and **Reset search & filters**. Several tags plus a short period plus a base model can easily come up empty.
 
-### In beiden Panels
-- **Volle Breite**: Der Button ⧉ oben im Panel zieht das Panel über die ganze Arbeitsfläche. Ein zweiter Klick, Esc oder ein Wechsel des Seitenleisten-Tabs holt es zurück. In voller Breite gibt es mehr Spalten im Raster, und die Detailansicht zeigt das Bild links und die Infos rechts.
-- **Raster** mit Infinite Scroll. Videos spielen beim Drüberfahren ab, ein `META`-Badge markiert Einträge mit Metadaten.
-- **Schnell-Button**: Beim Drüberfahren über ein Bild erscheint ein Button. Was er macht, stellst du in den Einstellungen (⚙) unter **Schnell-Button auf den Bildern** ein; Standard ist „Nur Prompt → Node“. Zur Wahl stehen alle Aktionen aus dem Kontextmenü, die etwas in den Workflow übernehmen.
-- **Tooltip**: Kurz über einem Bild verweilen zeigt eine kompakte Vorschau: Prompt (gekürzt), Negativ-Prompt, Parameter, Tags, Reaktionen und User.
-- **Kontextmenü** (Rechtsklick auf ein Bild):
-  - Prompt + Negativ → Nodes, Prompt + Negativ + Seed
-  - Nur Prompt → Node, Prompt + Seed
-  - Nur Negativ → Node, Negativ + Seed
-  - Seed → Sampler, Seed/Steps/CFG → Sampler, ComfyUI-Workflow laden
-  - **Bild → Load-Image-Node**: lädt das Originalbild in den `input`-Ordner von ComfyUI (als `civitai_<id>.<endung>`) und setzt es im ausgewählten Load-Image-Node. Ist keiner ausgewählt, nimmt es den ersten im Workflow, und gibt es keinen, legt es einen an. Das geht nur mit Bildern, nicht mit Videos, und gibt es auch als Button in der Detailansicht.
-  - Die Aktion des Schnell-Buttons ist im Menü fett markiert.
-  - „Prompt + Negativ“ beachtet die Ziel-Einstellung „Keiner“. Die Einzel- und Seed-Kombinationen übernehmen immer; steht ein Ziel auf „Keiner“, gilt dafür Auto. Fehlt einem Bild der Seed, übernehmen die Kombinationen nur den Prompt.
-  - Prompt kopieren, Seed kopieren, Alles kopieren
-  - Details öffnen, In Collection speichern…, Werke von @User, Auf Civitai öffnen
-  - Einträge, für die das Bild keine Daten hat, sind ausgegraut.
-- **Detailansicht** (Klick auf ein Bild):
-  - **Reaktionen** unter dem Bild: 👍 ❤️ 😂 😢 mit Anzahl, dazu die Zahl der Kommentare (💬, öffnet die Seite auf Civitai). Mit API-Key sind deine eigenen Reaktionen hervorgehoben, und ein Klick setzt oder entfernt sie direkt auf Civitai. Dafür braucht der Key Schreibrechte („Social: write“); ein Key mit vollem Zugriff hat sie.
-  - **In Collection speichern**: Liste deiner Collections mit Häkchen; ein Klick fügt das Bild hinzu oder entfernt es. Darunter kannst du direkt eine neue Collection anlegen, das Bild landet dann gleich darin.
-  - Prompt und Negativ-Prompt, jeweils mit „Kopieren“ und „→ Node“
-  - „Prompt + Negativ → Nodes“ füllt beide auf einmal
-  - „Seed/Steps/CFG → Sampler“
-  - „ComfyUI-Workflow laden“, falls das Bild einen eingebetteten Workflow hat
-  - **Parameter** mit dem tatsächlich verwendeten **Checkpoint** (Modellname und Version, verlinkt auf die Civitai-Modellseite)
-  - **Ressourcen**, gegliedert in Checkpoint, LoRAs (mit Gewicht) und Sonstige (Embeddings, Upscaler …), jeweils mit Link zu Civitai. Civitai liefert die Modellversionen eines Bildes mit. Fehlen sie, sucht das Plugin anhand der Hashes in den Metadaten. Was sich nicht zuordnen lässt, erscheint grau ohne Link.
-  - alle Metadaten als JSON, Link zum Bild auf Civitai
-  - Ein Klick auf den **Benutzernamen** zeigt alle Werke dieses Users.
+### In both panels
+- **Full width**: The ⧉ button at the top of the panel stretches it across the whole canvas. A second click, Esc, or switching sidebar tabs brings it back. At full width the grid has more columns, and the detail view shows the image on the left and the info on the right.
+- **Masonry grid** with infinite scroll. Videos play on hover, and a `META` badge marks items with metadata.
+- **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Only prompt → node". All context-menu actions that insert something into the workflow are available.
+- **Tooltip**: Resting on an image for a moment shows a compact preview: prompt (shortened), negative prompt, parameters, tags, reactions and user.
+- **Context menu** (right-click on an image):
+  - Prompt + negative → nodes, Prompt + negative + seed
+  - Only prompt → node, Prompt + seed
+  - Only negative → node, Negative + seed
+  - Seed → sampler, Seed/steps/CFG → sampler, Load ComfyUI workflow
+  - **Image → Load Image node**: downloads the original image into ComfyUI's `input` folder (as `civitai_<id>.<ext>`) and sets it in the selected Load Image node. If none is selected, it uses the first one in the workflow, and if there is none, it creates one. This works for images only, not videos, and is also available as a button in the detail view.
+  - The quick button's action is shown in bold in the menu.
+  - "Prompt + negative" respects the "None" target setting. The single and seed combinations always insert; if a target is set to "None", Auto is used for it. If an image has no seed, the combinations insert only the prompt.
+  - Copy prompt, Copy seed, Copy all
+  - Open details, Save to collection…, Works by @user, Open on Civitai
+  - Entries for which the image has no data are greyed out.
+- **Detail view** (click on an image):
+  - **Reactions** below the image: 👍 ❤️ 😂 😢 with counts, plus the number of comments (💬, opens the page on Civitai). With an API key your own reactions are highlighted, and a click sets or removes them directly on Civitai. This needs a key with write access ("Social: write"); a full-access key has it.
+  - **Save to collection**: a list of your collections with checkmarks; a click adds or removes the image. Below it you can create a new collection right away, and the image goes straight into it.
+  - Prompt and negative prompt, each with "Copy" and "→ Node"
+  - "Prompt + negative → nodes" fills both at once
+  - "Seed/steps/CFG → sampler"
+  - "Load ComfyUI workflow", if the image has an embedded workflow
+  - **Parameters** including the **checkpoint** actually used (model name and version, linked to the Civitai model page)
+  - **Resources**, grouped into checkpoint, LoRAs (with weight) and other (embeddings, upscalers …), each linked to Civitai. Civitai supplies an image's model versions. If they are missing, the plugin looks them up by the hashes in the metadata. Anything that can't be resolved is shown in grey without a link.
+  - All metadata as JSON, link to the image on Civitai
+  - Clicking the **username** shows all works by that user.
 
-### Welcher Node bekommt den Prompt?
+### Which node receives the prompt?
 
-In den Einstellungen (⚙) unter **Prompts einfügen in** gibt es die Felder **Prompt →** und **Negativ →**. Sie gelten für beide Panels, und die letzte Auswahl wird gespeichert. Steht dort **Auto**, gilt:
+In the settings (⚙) under **Insert prompts into** there are the fields **Prompt →** and **Negative →**. They apply to both panels, and the last selection is remembered. With **Auto**:
 
-- **Positiv**: der aktuell ausgewählte Text-/Prompt-Node; ist keiner ausgewählt, der Node am `positive`-Eingang des Samplers
-- **Negativ**: der Node am `negative`-Eingang des Samplers
+- **Positive**: the currently selected text/prompt node; if none is selected, the node connected to the sampler's `positive` input
+- **Negative**: the node connected to the sampler's `negative` input
 
-Du kannst stattdessen einen festen Node aus der Liste wählen. Fehlt dieser Node in einem anderen Workflow, verhält sich das Feld wie **Auto**. Mit **Keiner** wird der jeweilige Prompt nie übernommen, z. B. wenn du nur den positiven Prompt willst.
+You can pick a fixed node from the list instead. If that node is missing in another workflow, the field behaves like **Auto**. With **None**, that prompt is never inserted, e.g. if you only want the positive prompt.
 
 ## Installation
 
-**Über den ComfyUI-Manager** (sobald das Plugin in der Comfy Registry veröffentlicht ist): Im Manager nach „Civitai Discovery“ suchen, installieren und ComfyUI neu starten.
+**Via ComfyUI-Manager** (once the plugin is published in the Comfy Registry): search for "Civitai Discovery" in the Manager, install it and restart ComfyUI.
 
-**Manuell:**
+**Manually:**
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/Euphonique/comfyui-civitai-discovery
 ```
 
-Alternativ den Ordner einfach nach `ComfyUI/custom_nodes/` kopieren oder dort verlinken. Zusätzliche Python-Pakete brauchst du nicht, `aiohttp` bringt ComfyUI schon mit. Danach ComfyUI neu starten und den Browser neu laden.
+Alternatively, copy or symlink the folder into `ComfyUI/custom_nodes/`. No extra Python packages are needed; ComfyUI already ships `aiohttp`. Then restart ComfyUI and reload the browser.
 
-Du brauchst ein aktuelles ComfyUI-Frontend mit Seitenleisten-Tabs (ab etwa v1.3).
+You need a recent ComfyUI frontend with sidebar tabs (roughly v1.3 or later).
 
-## API-Key
+## API key
 
-1. Auf civitai.com unter **Account Settings → API Keys** einen Key erstellen. Ein Key mit vollem Zugriff reicht. Bei eingeschränkten Keys braucht er mindestens:
-   - **Collections: read** und **Media: read** zum Ansehen
-   - **Collections: write** zum Speichern in Collections und zum Anlegen, Bearbeiten und Löschen
-   - **User: read** und **Social: write**, um eigene Reaktionen zu sehen und zu vergeben
-2. In einem der beiden Panels auf ⚙ klicken, den Key eintragen und speichern. Der Key gilt für beide Panels.
+1. On civitai.com, create a key under **Account Settings → API Keys**. A full-access key is fine. A restricted key needs at least:
+   - **Collections: read** and **Media: read** for viewing
+   - **Collections: write** for saving to collections and for creating, editing and deleting them
+   - **User: read** and **Social: write** to see and set your own reactions
+2. Click ⚙ in either panel, enter the key and save. The key applies to both panels.
 
-Der Key wird nur serverseitig in `config.json` im Plugin-Ordner gespeichert (Dateirechte `600`) und nie an den Browser zurückgegeben. Alternativ kannst du die Umgebungsvariable `CIVITAI_API_KEY` setzen. Ist ein Key hinterlegt, schickt das Plugin ihn bei jeder Anfrage mit, auch beim Discovery-Feed.
+The key is stored only on the server, in `config.json` in the plugin folder (file permissions `600`), and is never sent back to the browser. Alternatively, you can set the environment variable `CIVITAI_API_KEY`. When a key is set, the plugin sends it with every request, including the Discovery feed.
 
-### Gespeicherte Einstellungen
+### Saved settings
 
-Alle Panel-Einstellungen bleiben auch über einen Neustart von ComfyUI erhalten und gelten in jedem Browser und auf jedem Gerät:
+All panel settings survive a ComfyUI restart and apply in every browser and on every device:
 
-- **API-Key** in `config.json`
-- **Dropdowns, Filter und Suche** (gewählte Collection, Sortierung, Zeitraum, Basismodell, Rating, Domain, NSFW-Unschärfe, gewählte Tags, Suchtext, Tag-Cloud und „Erweitert“ offen/zu, zuletzt angesehene User, Ziel-Nodes für Prompt/Negativ, Aktion des Schnell-Buttons) in `prefs.json`
+- **API key** in `config.json`
+- **Dropdowns, filters and search** (selected collection, sort, period, base model, rating, domain, NSFW blur, selected tags, search text, tag cloud and "Advanced" open/closed, recently viewed users, target nodes for prompt/negative, quick button action) in `prefs.json`
 
-Beide Dateien liegen im Plugin-Ordner auf dem ComfyUI-Server. Der Browser hält nur eine Kopie für den Fall, dass der Server nicht erreichbar ist. Nicht gespeichert werden eine gerade offene User-Ansicht in Discovery und die volle Breite.
+Both files live in the plugin folder on the ComfyUI server. The browser only keeps a copy in case the server is unreachable. Not saved: an open user view in Discovery and full width.
 
 ### civitai.com vs. civitai.red
 
-Civitai liefert Inhalte ab Rating R nur über **civitai.red** aus. Über civitai.com begrenzt die API die Anfragen auf PG/PG-13. In den Einstellungen (⚙) gibt es deshalb die Option **Domain**, die für beide Panels gilt:
+Civitai only delivers content rated R and above via **civitai.red**. Through civitai.com the API limits requests to PG/PG-13. The settings (⚙) therefore have a **Domain** option that applies to both panels:
 
-- **Auto** (Standard): civitai.red, sobald das gewählte Rating R, X oder XXX enthält, sonst civitai.com
-- **civitai.com** oder **civitai.red**: feste Domain
+- **Auto** (default): civitai.red as soon as the selected rating includes R, X or XXX, otherwise civitai.com
+- **civitai.com** or **civitai.red**: fixed domain
 
-## Technische Hinweise
+## Technical notes
 
-- **Discovery** nutzt die öffentliche REST-API (`GET /api/v1/images` mit `sort`, `period`, `type`, `baseModels`, `username`, `tags`, `withTags`).
-- **Textsuche** nutzt die tRPC-Prozedur `semanticImageSearch.search`. Civitai schaltet sie per Feature-Flag nur für einen Teil der Accounts frei, und sie braucht einen API-Key mit vollem Zugriff. Antwortet Civitai mit 401/403, fällt das Plugin für die laufende Sitzung auf den Prompt-Filter zurück.
-- **Tag-Vorschläge und Trending-Tags** kommen aus den tRPC-Endpunkten `tag.getAll` und `tag.getTrending` und brauchen deshalb einen API-Key. Die Tag-Cloud „In den Ergebnissen“ und die Tags der Bilder funktionieren ohne Key.
-- **Favoriten**: Die öffentliche API kann nicht nach Collections filtern. Das Plugin nutzt deshalb die tRPC-Endpunkte der Website (`collection.getAllUser`, `image.getInfinite`), die einen API-Key als Bearer-Token akzeptieren. Die Metadaten jeder Seite holt es danach gesammelt über `/api/v1/images?ids=…&withMeta=true`.
-- **Reaktionen**: Die Anzahlen kommen aus der REST-API (`stats`). Eigene Reaktionen liest das Plugin über `reaction.getMyImageReactions` und setzt sie über `reaction.toggle` (tRPC). Civitai aktualisiert die Zähler teils verzögert, deshalb passt das Plugin die Anzeige nach einem Klick selbst an.
-- **Bild → Node** lädt nur von `image.civitai.com` (keine beliebigen URLs, höchstens 60 MB) und speichert in den `input`-Ordner von ComfyUI. Ein schon vorhandenes Bild mit derselben ID wird wiederverwendet.
-- **Checkpoint und LoRAs** kommen aus `GET /api/v1/model-versions/{id}` (für die `modelVersionIds` eines Bildes) bzw. `/api/v1/model-versions/by-hash/{hash}`. Die Ergebnisse speichert der ComfyUI-Server bis zum Neustart zwischen.
-- **Schreibzugriffe** laufen über die tRPC-Mutationen `collection.saveItem`, `collection.upsert` und `collection.delete`. Die öffentliche API kann Collections nur lesen.
-- Diese tRPC-Endpunkte sind intern und können sich ohne Ankündigung ändern. Bricht etwas, liegt es meist an [`civitai_client.py`](civitai_client.py).
-- Alle Anfragen laufen über das ComfyUI-Backend (`/civitai_discovery/*`). Dadurch gibt es keine CORS-Probleme und der Key bleibt auf dem Server.
-- Der Metadaten-Filter arbeitet im Browser (die API bietet dafür keinen funktionierenden Filter). Bei Bedarf lädt das Plugin automatisch Seiten nach: höchstens 5 am Stück ohne Treffer, danach über „Mehr laden“.
+- **Discovery** uses the public REST API (`GET /api/v1/images` with `sort`, `period`, `type`, `baseModels`, `username`, `tags`, `withTags`).
+- **Text search** uses the tRPC procedure `semanticImageSearch.search`. Civitai enables it per feature flag for only some accounts, and it needs a full-access API key. If Civitai answers with 401/403, the plugin falls back to the prompt filter for the current session.
+- **Tag suggestions and trending tags** come from the tRPC endpoints `tag.getAll` and `tag.getTrending` and therefore need an API key. The "In the results" tag cloud and the image tags work without a key.
+- **Favorites**: The public API can't filter by collection. The plugin therefore uses the website's tRPC endpoints (`collection.getAllUser`, `image.getInfinite`), which accept an API key as a Bearer token. It then fetches the metadata for each page in one batch via `/api/v1/images?ids=…&withMeta=true`.
+- **Reactions**: Counts come from the REST API (`stats`). The plugin reads your own reactions via `reaction.getMyImageReactions` and sets them via `reaction.toggle` (tRPC). Civitai sometimes updates the counters with a delay, so the plugin adjusts the display itself after a click.
+- **Image → node** only downloads from `image.civitai.com` (no arbitrary URLs, 60 MB max) and saves into ComfyUI's `input` folder. An existing image with the same ID is reused.
+- **Checkpoint and LoRAs** come from `GET /api/v1/model-versions/{id}` (for an image's `modelVersionIds`) or `/api/v1/model-versions/by-hash/{hash}`. The ComfyUI server caches the results until it restarts.
+- **Write operations** use the tRPC mutations `collection.saveItem`, `collection.upsert` and `collection.delete`. The public API can only read collections.
+- These tRPC endpoints are internal and may change without notice. If something breaks, the cause is usually in [`civitai_client.py`](civitai_client.py).
+- All requests go through the ComfyUI backend (`/civitai_discovery/*`). This avoids CORS issues and keeps the key on the server.
+- The metadata filter runs in the browser (the API has no working filter for it). The plugin loads more pages automatically as needed: at most 5 in a row without matches, then via "Load more".
+- Tested on Linux. Windows and macOS should work since the plugin is pure Python and JavaScript, but haven't been tested yet.
 
-## Dateien
+## Files
 
-| Datei | Zweck |
+| File | Purpose |
 |---|---|
-| `__init__.py` | Einstiegspunkt für ComfyUI, `WEB_DIRECTORY` |
-| `civitai_routes.py` | HTTP-Routen im ComfyUI-Server, Speicherung des API-Keys |
-| `civitai_client.py` | Civitai-API-Client (REST + tRPC, Lesen und Schreiben) |
-| `web/civitai_discovery.js` | Beide Panels, Filter, Collection-Verwaltung, Einfügen in Nodes (DE/EN je nach ComfyUI-Sprache) |
-| `web/civitai_discovery.css` | Styles (nutzen die Theme-Variablen von ComfyUI) |
-| `web/base_models.json` | Zuordnung Basismodell → Familie („SDXL 1.0“ → „Stable Diffusion XL“), erzeugt aus Civitais `basemodel.constants.ts` |
+| `__init__.py` | ComfyUI entry point, `WEB_DIRECTORY` |
+| `civitai_routes.py` | HTTP routes in the ComfyUI server, API key storage |
+| `civitai_client.py` | Civitai API client (REST + tRPC, read and write) |
+| `web/civitai_discovery.js` | Both panels, filters, collection management, inserting into nodes (English/German depending on the ComfyUI language) |
+| `web/civitai_discovery.css` | Styles (use ComfyUI's theme variables) |
+| `web/base_models.json` | Base model → family mapping ("SDXL 1.0" → "Stable Diffusion XL"), generated from Civitai's `basemodel.constants.ts` |
