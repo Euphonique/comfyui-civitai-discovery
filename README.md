@@ -173,7 +173,7 @@ All panel settings survive a ComfyUI restart and apply in every browser and on e
 - **API key** in `config.json`
 - **Dropdowns, filters and search** (selected collection, sort, period, base model, rating, domain, NSFW blur, selected tags, search text, tag cloud and "Advanced" open/closed, recently viewed users, target nodes for prompt/negative, quick button action) in `prefs.json`
 
-Both files live in the plugin folder on the ComfyUI server. The browser only keeps a copy in case the server is unreachable. The prompt history is stored separately in `history.json`. Not saved: an open user or model view in Discovery and full width.
+Both files live in the plugin folder on the ComfyUI server. The browser only keeps a copy in case the server is unreachable. The prompt history is stored separately in `history.json`. Full width is remembered per panel: a panel that was maximized opens maximized again, also after switching tabs or reloading. Not saved: an open user or model view in Discovery.
 
 ### civitai.com vs. civitai.red
 

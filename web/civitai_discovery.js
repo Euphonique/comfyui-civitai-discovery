@@ -1503,6 +1503,7 @@ class BrowserPanel {
       excludeTags: Array.isArray(p.excludeTags) ? p.excludeTags.filter((x) => typeof x === "string" && x) : [],
       excludeWords: Array.isArray(p.excludeWords) ? p.excludeWords.filter((x) => typeof x === "string" && x) : [],
       cloudOpen: !!p.cloudOpen,
+      full: !!p.full, // full width: restored whenever the panel is shown
       advancedOpen: !!p.advancedOpen,
       user: "", // discovery: currently shown user (not persisted)
       model: null, // discovery: {id, name} of the model version whose images are shown (not persisted)
@@ -1574,7 +1575,7 @@ class BrowserPanel {
 
   persist() {
     this.updateAdvancedBadge?.();
-    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "excludeTags", "excludeWords", "cloudOpen", "advancedOpen"];
+    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "excludeTags", "excludeWords", "full", "cloudOpen", "advancedOpen"];
     savePrefs(this.mode, Object.fromEntries(keys.map((k) => [k, this.state[k]])));
   }
 
@@ -2247,7 +2248,12 @@ class BrowserPanel {
    * fixed from the sidebar's left edge to the right window edge. Being detached,
    * no sidebar/splitter container can clip, transform or resize it.
    */
-  toggleFull(on = !this.full) {
+  /** auto: left/entered because the tab was closed, switched or shown again (the choice stays). */
+  toggleFull(on = !this.full, auto = false) {
+    if (!auto && this.state.full !== on) {
+      this.state.full = on;
+      this.persist();
+    }
     if (on === !!this.full) return;
     const scrolls = [...this.root.querySelectorAll(".cf-scroll")].map((el) => [el, el.scrollTop]);
     if (on) {
@@ -2260,7 +2266,7 @@ class BrowserPanel {
       this.fullTimer = setInterval(() => {
         const host = this.homeParent;
         // closed, hidden, or another sidebar tab now renders into the same host
-        if (!host?.isConnected || host.getBoundingClientRect().width === 0 || host.childElementCount > 0) this.toggleFull(false);
+        if (!host?.isConnected || host.getBoundingClientRect().width === 0 || host.childElementCount > 0) this.toggleFull(false, true);
         else this.positionFull();
       }, 400);
     } else {
@@ -5208,7 +5214,7 @@ function showPanel(mode) {
     const old = layout.current !== mode ? panels.get(layout.current) : null;
     if (old) {
       old.closePanelMenu?.();
-      if (old.full) old.toggleFull(false);
+      if (old.full) old.toggleFull(false, true);
       old.root.querySelectorAll("video").forEach((v) => v.pause());
     }
     layout.current = mode;
@@ -5230,6 +5236,16 @@ function attachPanel(panel, el) {
   } else el.replaceChildren(panel.root);
   panel.init();
   panel.relayout();
+  // it was in full width when it was left: go back to it once the sidebar has its size
+  if (panel.state.full && !panel.full) {
+    let tries = 0;
+    const restore = () => {
+      if (panel.full || panel.root.parentElement !== el || !el.isConnected || !panel.state.full) return;
+      if (el.getBoundingClientRect().width > 0) return panel.toggleFull(true, true);
+      if (++tries < 30) setTimeout(restore, 50);
+    };
+    setTimeout(restore, 30);
+  }
   // resume a detail video that was paused when the tab was left
   panel.detailView.querySelectorAll("video").forEach((v) => !panel.detailView.hidden && v._cfResume && v.play().catch(() => {}));
 }

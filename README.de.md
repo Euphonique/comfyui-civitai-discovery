@@ -184,7 +184,7 @@ Alle Panel-Einstellungen bleiben auch über einen Neustart von ComfyUI erhalten 
 - **API-Key** in `config.json`
 - **Dropdowns, Filter und Suche** (gewählte Collection, Sortierung, Zeitraum, Basismodell, Rating, Domain, NSFW-Unschärfe, gewählte Tags, Suchtext, Tag-Cloud und „Erweitert“ offen/zu, zuletzt angesehene User, Ziel-Nodes für Prompt/Negativ, Aktion des Schnell-Buttons) in `prefs.json`
 
-Beide Dateien liegen im Plugin-Ordner auf dem ComfyUI-Server. Der Browser hält nur eine Kopie für den Fall, dass der Server nicht erreichbar ist. Der Prompt-Verlauf liegt separat in `history.json`. Nicht gespeichert werden eine gerade offene User- oder Modell-Ansicht in Discovery und die volle Breite.
+Beide Dateien liegen im Plugin-Ordner auf dem ComfyUI-Server. Der Browser hält nur eine Kopie für den Fall, dass der Server nicht erreichbar ist. Der Prompt-Verlauf liegt separat in `history.json`. Die volle Breite merkt sich jedes Panel: Ein maximiertes Panel öffnet sich wieder maximiert, auch nach einem Tab-Wechsel oder Neuladen. Nicht gespeichert wird eine gerade offene User- oder Modell-Ansicht in Discovery.
 
 ### civitai.com vs. civitai.red
 
