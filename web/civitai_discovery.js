@@ -2283,6 +2283,7 @@ class BrowserPanel {
     if (this.isFav) this.setSource(`user:${username}`, true);
     else {
       this.state.user = username;
+      this.state.model = null; // user and model view don't combine (the bar shows only one)
       this.persist();
       this.reload(true);
     }
@@ -2299,8 +2300,8 @@ class BrowserPanel {
 
   /** Discovery: images made with one model version (opened from the resources list). */
   showModel(resource) {
-    if (this.isFav) {
-      // the feed lives in the Discovery tab
+    if (this.isFav || this.isUsers) {
+      // the feed lives in the Discovery tab (the artists tab has no model view)
       let disc = panels.get("discovery");
       if (!disc) panels.set("discovery", (disc = new BrowserPanel("discovery")));
       if (disc.initialized) disc.pushView();
@@ -2440,6 +2441,7 @@ class BrowserPanel {
   }
   showFeed() {
     this.state.user = "";
+    this.state.model = null;
     this.state.following = true;
     this.userOrigin = null;
     this.reload();
@@ -2448,6 +2450,7 @@ class BrowserPanel {
     this.viewStack = [];
     this.profileUser = null;
     this.state.user = "";
+    this.state.model = null;
     this.state.following = false;
     this.requestId++;
     this.loading = false;
@@ -2462,6 +2465,7 @@ class BrowserPanel {
   /** A user's page: profile header + their works (with the usual filters). */
   openUser(username, keepStack) {
     this.state.user = username;
+    this.state.model = null; // a left-over model filter would hide the artist's works
     this.state.following = false;
     this.reload(keepStack);
   }
@@ -4598,7 +4602,7 @@ app.registerExtension({
       return;
     }
     registerTab("discovery", "civitai-discovery", "pi pi-compass", t("titleDiscovery"));
-    registerTab("favorites", "civitai-favorites", "pi pi-heart", t("titleFavorites"));
     registerTab("users", "civitai-users", "pi cf-userstar", t("titleUsers"));
+    registerTab("favorites", "civitai-favorites", "pi pi-heart", t("titleFavorites"));
   },
 });

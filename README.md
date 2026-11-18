@@ -5,8 +5,8 @@
 A ComfyUI plugin that adds three new panels to the left sidebar:
 
 - 🧭 **Civitai Discovery**: the general Civitai feed of images and videos
+- ⭐ **Civitai Artists**: the feed of artists you follow, your following list and artist pages
 - ❤ **Civitai Favorites**: your collections and reactions, including collection management
-- 👤 **Civitai Artists**: the feed of artists you follow, your following list and artist pages
 
 Both panels let you filter, insert prompts into prompt nodes with one click, and save images to your Civitai collections. Saving happens directly on Civitai, not just locally.
 

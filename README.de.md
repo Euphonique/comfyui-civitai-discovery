@@ -5,8 +5,8 @@
 Ein ComfyUI-Plugin mit drei neuen Panels in der linken Seitenleiste:
 
 - 🧭 **Civitai Discovery**: der allgemeine Civitai-Feed mit Bildern und Videos
+- ⭐ **Civitai Künstler**: der Feed der Künstler, denen du folgst, deine Gefolgt-Liste und Künstlerseiten
 - ❤ **Civitai Favoriten**: deine Collections und Reaktionen, inklusive Verwaltung der Collections
-- 👤 **Civitai Künstler**: der Feed der Künstler, denen du folgst, deine Gefolgt-Liste und Künstlerseiten
 
 In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen und Bilder in deine Civitai-Collections speichern. Gespeichert wird direkt auf Civitai, nicht nur lokal.
 
