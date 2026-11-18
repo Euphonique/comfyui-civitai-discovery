@@ -1411,6 +1411,7 @@ class BrowserPanel {
     this.emptyActions = h("div", { class: "cf-empty-actions", hidden: true });
     this.notice = h("div", { class: "cf-notice", hidden: true });
     this.listView = h("div", { class: "cf-list" }, h("div", { class: "cf-scroll" }, this.message, this.emptyActions, this.grid, this.moreBtn, this.sentinel));
+    this.listView.firstChild.addEventListener("scroll", (e) => !this.listView.hidden && (this.gridScrollTop = e.target.scrollTop), { passive: true });
     this.detailView = h("div", { class: "cf-detail", hidden: true });
 
     this.userLabel = h("span", { class: "cf-grow" });
@@ -2040,24 +2041,78 @@ class BrowserPanel {
     this.userGroup.hidden = !users.length;
   }
 
-  setSource(source) {
+  setSource(source, keepStack = false) {
     if (!source.startsWith("user:")) this.state.lastFavSource = source;
     this.state.source = source;
     this.renderUserOptions();
     this.sourceSelect.value = source;
     this.updateManageButtons();
     this.persist();
-    this.reload();
+    this.reload(keepStack);
+  }
+
+  /* ---------- view stack: user / model views remember the gallery they came from ---------- */
+  pushView() {
+    this.viewStack ||= [];
+    this.viewStack.push({
+      user: this.state.user,
+      model: this.state.model,
+      following: this.state.following,
+      source: this.state.source,
+      items: this.items.slice(),
+      cursor: this.cursor,
+      hasMore: this.hasMore,
+      removedIds: new Set(this.removedIds),
+      // the grid is hidden while a detail view is open, so use the last position seen
+      scrollTop: this.listView.hidden ? this.gridScrollTop || 0 : this.listView.firstChild.scrollTop,
+    });
+    if (this.viewStack.length > 10) this.viewStack.shift();
+  }
+  /** Back to the previous gallery exactly as it was (items, loaded pages, scroll position). */
+  popView() {
+    const v = this.viewStack?.pop();
+    if (!v) return false;
+    Object.assign(this.state, { user: v.user, model: v.model, following: v.following });
+    this.followBtn?.classList.toggle("active", !!v.following);
+    if (this.isFav && v.source !== this.state.source) {
+      this.state.source = v.source;
+      if (!v.source.startsWith("user:")) this.state.lastFavSource = v.source;
+      this.renderUserOptions();
+      this.sourceSelect.value = v.source;
+      this.updateManageButtons();
+    }
+    this.persist();
+    this.requestId++; // drop a page that is still loading for the left view
+    this.loading = false;
+    this.items = v.items;
+    this.cursor = v.cursor;
+    this.hasMore = v.hasMore;
+    this.removedIds = v.removedIds;
+    this.autoPages = 0;
+    this.updateScopeBar();
+    this.closeDetail(true);
+    this.resetGrid();
+    this.appendTiles(this.items);
+    this.updateBaseModelOptions();
+    this.updateStatus();
+    this.renderCloud();
+    const scroller = this.listView.querySelector(".cf-scroll");
+    if (scroller) {
+      scroller.scrollTop = v.scrollTop;
+      requestAnimationFrame(() => (scroller.scrollTop = v.scrollTop)); // after the tiles are laid out
+    }
+    return true;
   }
 
   showUser(username) {
     if (!username) return;
     this.state.recentUsers = [username, ...this.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
-    if (this.isFav) this.setSource(`user:${username}`);
+    this.pushView();
+    if (this.isFav) this.setSource(`user:${username}`, true);
     else {
       this.state.user = username;
       this.persist();
-      this.reload();
+      this.reload(true);
     }
   }
 
@@ -2067,16 +2122,18 @@ class BrowserPanel {
       // the feed lives in the Discovery tab
       let disc = panels.get("discovery");
       if (!disc) panels.set("discovery", (disc = new BrowserPanel("discovery")));
+      if (disc.initialized) disc.pushView();
       disc.state.model = { id: resource.versionId, name: `${resource.modelName}${resource.versionName ? ` – ${resource.versionName}` : ""}` };
       disc.state.user = "";
       const store = app.extensionManager?.sidebarTab;
       if (store && store.activeSidebarTabId !== "civitai-discovery") store.toggleSidebarTab?.("civitai-discovery");
-      if (disc.initialized) disc.reload();
+      if (disc.initialized) disc.reload(true);
       return;
     }
+    this.pushView();
     this.state.model = { id: resource.versionId, name: `${resource.modelName}${resource.versionName ? ` – ${resource.versionName}` : ""}` };
     this.state.user = "";
-    this.reload();
+    this.reload(true);
   }
   setFollowing(on) {
     if (on && !shared.config?.hasKey) return toast("warn", t("needKey"));
@@ -2087,6 +2144,7 @@ class BrowserPanel {
   }
 
   backFromUser() {
+    if (this.popView()) return;
     if (!this.isFav) {
       // leave the innermost view: user, then model, then the followed feed
       if (this.state.user) this.state.user = "";
@@ -2195,7 +2253,13 @@ class BrowserPanel {
   }
 
   /* ---------- loading ---------- */
-  async reload() {
+  /** Hide the grid for a detail/history view, remembering where it was scrolled to. */
+  hideGrid() {
+    if (!this.listView.hidden) this.gridScrollTop = this.listView.firstChild.scrollTop;
+    this.listView.hidden = true;
+  }
+  /** The bar above the grid: "Works by …" / "Images made with …" / "People you follow" + back. */
+  updateScopeBar() {
     const user = this.currentUser();
     const scope = user
       ? t("userView", { user })
@@ -2206,6 +2270,11 @@ class BrowserPanel {
           : "";
     this.userBar.hidden = !scope;
     this.userLabel.textContent = scope;
+  }
+  /** keepStack: a user/model view was just pushed; anything else (filters, search) starts over. */
+  async reload(keepStack = false) {
+    if (!keepStack) this.viewStack = [];
+    this.updateScopeBar();
     this.updateKeyStatus();
     this.items = [];
     this.cursor = null;
@@ -2216,6 +2285,8 @@ class BrowserPanel {
     this.removedIds.clear();
     this.resetGrid();
     this.closeDetail(true);
+    this.listView.firstChild.scrollTop = 0; // a new view starts at the top
+    this.gridScrollTop = 0;
     this.updateBaseModelOptions();
     await this.loadPage();
   }
@@ -2640,7 +2711,7 @@ class BrowserPanel {
       h("div", { class: "cf-scroll" }, h("div", { class: "cf-preview" + (item.nsfwLevel >= 4 ? " cf-nsfw" : "") }, media), ...body)
     );
     this.fillTargets();
-    this.listView.hidden = true;
+    this.hideGrid();
     this.detailView.hidden = false;
     this.openPicker = () => this.togglePicker(item, pickerBox, saveBtn);
   }
@@ -3472,7 +3543,7 @@ class BrowserPanel {
       ),
       h("div", { class: "cf-scroll" }, list)
     );
-    this.listView.hidden = true;
+    this.hideGrid();
     this.detailView.hidden = false;
     const render = () => {
       if (!this.historyOpen) return promptHistory.listeners.delete(render);
