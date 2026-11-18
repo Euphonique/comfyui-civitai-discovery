@@ -1626,11 +1626,36 @@ class BrowserPanel {
     return { tags: out.tags.filter(Boolean), users: out.users, text: out.text.join(" ") };
   }
 
-  /** The "#word" being typed at the end of the input, if any. */
+  /** Tokens in input order: {kind: "tag", name, quoted} | {kind: "user", name} | {kind: "text", word}. */
+  tokenizeSearch(raw) {
+    const out = [];
+    const re = /#"([^"]+)"|#(\S+)|@(\S+)|(\S+)/g;
+    let m;
+    while ((m = re.exec(raw))) {
+      if (m[1]) out.push({ kind: "tag", name: m[1].trim(), quoted: true });
+      else if (m[2]) out.push({ kind: "tag", name: m[2].replace(/_/g, " ").trim(), quoted: false });
+      else if (m[3]) out.push({ kind: "user", name: m[3] });
+      else out.push({ kind: "text", word: m[4] });
+    }
+    return out;
+  }
+
+  /**
+   * The "#…" being typed at the end of the input, if any. It may contain spaces
+   * ("#star tr" -> "star tr") so tags like "star trek" can be found without quotes;
+   * a tag already completed from the suggestions ends at the space after it.
+   */
   currentHashToken(raw) {
-    const m = /(^|\s)#("[^"]*|[^\s#@"]*)$/.exec(raw);
+    const m = /(^|\s)#("[^"]*|[^#@"]*)$/.exec(raw);
     if (!m) return null;
-    return { start: m.index + m[1].length, query: m[2].replace(/^"/, "").replace(/_/g, " ") };
+    let body = m[2];
+    if (!body.startsWith('"')) {
+      const first = body.split(" ")[0];
+      // "#owl misty" after picking #owl: the tag is done, the rest is text
+      if (body.includes(" ") && this.pickedTags?.has(normTag(first))) return null;
+      if (body.trim().split(/\s+/).length > 5) return null;
+    }
+    return { start: m.index + m[1].length, query: body.replace(/^"/, "").replace(/_/g, " ") };
   }
 
   localTagMatches(q, limit = 8) {
@@ -1698,7 +1723,10 @@ class BrowserPanel {
     }
     this.suggestActions = actions;
     const exact = tags.findIndex((x) => x.name.toLowerCase() === q.toLowerCase());
-    this.suggestIdx = mode === "hash" ? (tags.length ? Math.max(0, exact) : null) : structured ? rows.length - 1 : exact >= 0 ? exact : null;
+    // "#star tr": preselect a tag that starts with what was typed; "#owl misty": Enter just searches
+    const prefix = tags.findIndex((x) => normTag(x.name).startsWith(normTag(q)));
+    const hashIdx = exact >= 0 ? exact : prefix >= 0 ? prefix : tags.length && !q.trim().includes(" ") ? 0 : null;
+    this.suggestIdx = mode === "hash" ? hashIdx : structured ? rows.length - 1 : exact >= 0 ? exact : null;
     this.suggestBox.replaceChildren(...rows);
     rows.forEach((r, i) => r.classList.toggle("active", i === this.suggestIdx));
     this.suggestBox.hidden = document.activeElement !== this.searchInput || !rows.length;
@@ -1744,13 +1772,31 @@ class BrowserPanel {
     this.hideSuggest();
     const found = [];
     const missing = [];
-    for (const name of parsed.tags) {
-      const tag = await this.resolveTagByName(name);
+    const words = [];
+    // "#star trek": the longest run of following words that is a tag wins ("star trek" before "star")
+    const tokens = this.tokenizeSearch(raw);
+    for (let i = 0; i < tokens.length; i++) {
+      const tok = tokens[i];
+      if (tok.kind === "text") words.push(tok.word);
+      if (tok.kind !== "tag") continue;
+      let tag = null;
+      // a tag picked from the suggestions or written in quotes is taken as is
+      if (!tok.quoted && !this.pickedTags?.has(normTag(tok.name))) {
+        let n = 0;
+        while (n < 4 && tokens[i + 1 + n]?.kind === "text") n++;
+        for (let k = n; k > 0 && !tag; k--) {
+          const name = [tok.name, ...tokens.slice(i + 1, i + 1 + k).map((x) => x.word)].join(" ");
+          tag = await this.resolveTagByName(name);
+          if (tag) i += k; // those words belong to the tag
+        }
+      }
+      tag ||= await this.resolveTagByName(tok.name);
       if (tag) found.push(tag);
-      else missing.push(name);
+      else missing.push(tok.name);
     }
+    this.pickedTags = new Map(); // picks belong to this input only
     if (missing.length) toast("warn", t("tagNotFound", { tags: missing.map((x) => `#${x}`).join(", ") }));
-    const text = [parsed.text, ...missing].filter(Boolean).join(" ");
+    const text = [words.join(" "), ...missing].filter(Boolean).join(" ");
     const known = new Set(this.state.tags.map((x) => x.id));
     this.state.tags = [...this.state.tags, ...found.filter((x) => !known.has(x.id)).map((x) => ({ id: x.id, name: x.name }))].slice(-10);
     if (text) this.state.textFilter = text;
@@ -2484,6 +2530,7 @@ class BrowserPanel {
     if (item.type === "video") {
       media = h("video", { src: item.thumbUrl, poster: item.posterUrl, muted: true, loop: true, playsInline: true, preload: "none" });
       media.muted = true;
+      pauseWhenHidden(media, false);
     } else {
       media = h("img", { src: item.thumbUrl, loading: "lazy", alt: "" });
     }
@@ -2617,6 +2664,7 @@ class BrowserPanel {
       item.type === "video"
         ? h("video", { src: item.previewUrl, poster: item.posterUrl, controls: true, autoplay: true, muted: true, loop: true, playsInline: true })
         : h("img", { src: item.previewUrl, alt: "" });
+    if (item.type === "video") pauseWhenHidden(media, true);
 
     const textBlock = (label, text, kind) =>
       h(
@@ -4110,6 +4158,24 @@ document.addEventListener(
   },
   true
 );
+/* ---------- videos: never play where nobody can see them ---------- */
+// A looping video keeps the browser's GPU busy: pause it when it is scrolled out of view,
+// when the panel is closed / another sidebar tab is shown, or when the browser tab is hidden.
+const videoObserver = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    const v = e.target;
+    if (!e.isIntersecting) v.pause();
+    else if (v._cfResume && document.visibilityState === "visible") v.play().catch(() => {});
+  }
+});
+function pauseWhenHidden(video, resume) {
+  video._cfResume = resume; // detail video: continue when visible again; grid videos only play on hover
+  videoObserver.observe(video);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") document.querySelectorAll(".civitai-favorites video").forEach((v) => v.pause());
+});
+
 /* ---------- drag & drop onto the canvas ---------- */
 let dragItem = null; // {panel, item} while an artwork is dragged
 function canvasDropInfo(e) {
@@ -4196,7 +4262,11 @@ function registerTab(mode, id, icon, title) {
         panel.positionFull();
       } else el.replaceChildren(panel.root);
       panel.init();
+      // resume a detail video that was paused when the tab was left
+      panel.detailView.querySelectorAll("video").forEach((v) => !panel.detailView.hidden && v._cfResume && v.play().catch(() => {}));
     },
+    // tab closed or another sidebar tab opened: stop videos (they'd keep the GPU busy off-screen)
+    destroy: () => panels.get(mode)?.root.querySelectorAll("video").forEach((v) => v.pause()),
   });
 }
 
