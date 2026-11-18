@@ -335,6 +335,44 @@ async def toggle_reaction(request: web.Request) -> web.Response:
     return web.json_response({"reactions": mine.get(str(image_id), [])})
 
 
+@routes.get(f"{PREFIX}/following")
+async def get_following(request: web.Request) -> web.Response:
+    try:
+        users = await _client(request).get_following()
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response({"users": users})
+
+
+@routes.get(f"{PREFIX}/user")
+async def get_user(request: web.Request) -> web.Response:
+    try:
+        return web.json_response(await _client(request).get_user(request.query.get("username", "")))
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+
+
+@routes.get(f"{PREFIX}/users")
+async def search_users(request: web.Request) -> web.Response:
+    try:
+        return web.json_response({"users": await _client(request).search_users(request.query.get("query", ""))})
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+
+
+@routes.post(f"{PREFIX}/follow")
+async def toggle_follow(request: web.Request) -> web.Response:
+    """Follow / unfollow; returns the new following list so the UI is in sync with Civitai."""
+    try:
+        body = await _json_body(request)
+        client = _client(request)
+        await client.toggle_follow(str(body.get("username") or ""))
+        users = await client.get_following()
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response({"users": users})
+
+
 @routes.get(f"{PREFIX}/tags")
 async def search_tags(request: web.Request) -> web.Response:
     try:

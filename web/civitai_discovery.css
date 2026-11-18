@@ -1223,3 +1223,209 @@
   opacity: 0.25;
   pointer-events: none;
 }
+
+/* ---- follow ---- */
+.cf-follow {
+  margin-left: 6px;
+  flex: none;
+}
+.cf-follow.on {
+  color: var(--cf-accent);
+  border-color: color-mix(in srgb, var(--cf-accent) 50%, transparent);
+}
+.cf-follow .cf-follow-off {
+  display: none;
+}
+.cf-follow.on:hover {
+  color: #e57373;
+  border-color: #e57373;
+}
+.cf-follow.on:hover .cf-follow-on {
+  display: none;
+}
+.cf-follow.on:hover .cf-follow-off {
+  display: inline;
+}
+.cf-follow-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+.cf-follow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cf-border) 50%, transparent);
+}
+.cf-follow-row.off .cf-user {
+  opacity: 0.5;
+}
+.cf-follow-row .cf-user {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- users tab ---- */
+/* tab icon: a person with a star (PrimeIcons has none), drawn as a mask in the current text color */
+.pi.cf-userstar {
+  width: 1.2em;
+  height: 1.2em;
+  margin: -0.1em;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='1.6 1.4 21.2 20.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8.5' r='3.8'/%3E%3Cpath d='M2.5 20.5c0-3.9 2.9-6.6 6.5-6.6s6.5 2.7 6.5 6.6'/%3E%3Cpath d='M18.5 2.6l1.05 2.15 2.35.34-1.7 1.66.4 2.34-2.1-1.1-2.1 1.1.4-2.34-1.7-1.66 2.35-.34z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='1.6 1.4 21.2 20.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8.5' r='3.8'/%3E%3Cpath d='M2.5 20.5c0-3.9 2.9-6.6 6.5-6.6s6.5 2.7 6.5 6.6'/%3E%3Cpath d='M18.5 2.6l1.05 2.15 2.35.34-1.7 1.66.4 2.34-2.1-1.1-2.1 1.1.4-2.34-1.7-1.66 2.35-.34z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.pi.cf-userstar::before {
+  content: none;
+}
+.cf-people {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 10px 8px;
+  min-height: 0;
+  flex: 1;
+}
+.cf-people .cf-row .cf-search-input {
+  flex: 1;
+}
+.cf-artists-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.cf-artists-toggle .pi-chevron-down,
+.cf-artists-toggle .pi-chevron-up {
+  color: var(--cf-muted);
+  font-size: 11px;
+}
+.cf-artists-toggle.open {
+  border-color: color-mix(in srgb, var(--cf-accent) 50%, transparent);
+}
+.cf-people-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.cf-person {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--cf-border) 45%, transparent);
+}
+.cf-person.off .cf-person-main {
+  opacity: 0.5;
+}
+.cf-person-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cf-person-main:hover {
+  background: var(--cf-input);
+}
+.cf-person-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-avatar {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--cf-input);
+}
+.cf-avatar.big {
+  width: 64px;
+  height: 64px;
+}
+.cf-avatar-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cf-muted);
+  font-weight: 600;
+}
+.cf-avatar.big.cf-avatar-empty {
+  font-size: 26px;
+}
+.cf-blur .cf-nsfw-avatar {
+  filter: blur(6px);
+}
+.cf-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px 8px;
+}
+.cf-profile-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.cf-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cf-profile-id {
+  flex: 1;
+  min-width: 0;
+}
+.cf-profile-name {
+  font-size: 18px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cf-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 62px;
+  flex: 1;
+  padding: 5px 4px;
+  border-radius: 6px;
+  background: var(--cf-input);
+}
+.cf-stat b {
+  font-size: 14px;
+}
+.cf-stat span {
+  color: var(--cf-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

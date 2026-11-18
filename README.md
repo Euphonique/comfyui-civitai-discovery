@@ -2,10 +2,11 @@
 
 *[Deutsche Version](README.de.md)*
 
-A ComfyUI plugin that adds two new panels to the left sidebar:
+A ComfyUI plugin that adds three new panels to the left sidebar:
 
 - 🧭 **Civitai Discovery**: the general Civitai feed of images and videos
 - ❤ **Civitai Favorites**: your collections and reactions, including collection management
+- 👤 **Civitai Artists**: the feed of artists you follow, your following list and artist pages
 
 Both panels let you filter, insert prompts into prompt nodes with one click, and save images to your Civitai collections. Saving happens directly on Civitai, not just locally.
 
@@ -25,7 +26,6 @@ Both panels let you filter, insert prompts into prompt nodes with one click, and
 - **Base model**: e.g. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. The most popular families are listed first, followed by all others. Civitai filters on the server, so this works for rare models too.
 - Sort, period and base model sit in one row. Below it, **Advanced** expands the remaining filters: media type, metadata (with metadata, with prompt, without), rating and blur NSFW. If any of them differ from the default, the collapsed section shows how many, e.g. "Advanced (1)".
 - **Media type and rating** are filtered on the server as well.
-- **People you follow** (👥 button in the header): only works by the users you follow on Civitai, with the same sort, period and filters. Needs an API key.
 - **Images made with a model**: the 🖼 button next to a checkpoint or LoRA in the resources list shows that model version's gallery (all time). Also works from the Favorites tab, which then switches to Discovery.
 - Works without an API key. You need a key for content rated R and above via civitai.red, and for saving to collections.
 
@@ -37,6 +37,13 @@ Both panels let you filter, insert prompts into prompt nodes with one click, and
   - **🗑** deletes it after a confirmation. The images themselves are kept.
   - Editing and deleting only work for your own collections.
 - **Filters**: sort and base model (with counts; only families present in the current view) in one row. Under **Advanced**: media type, metadata, rating and blur NSFW.
+
+### Civitai Artists
+Needs an API key.
+- **Default view: the feed of the artists you follow**, with the usual sort, period, base model and filters.
+- **Followed Artists** (toggle at the top; it then switches back to the feed): everyone you follow on Civitai, with avatar. The search field filters the list and also finds other artists. Each row has a **Follow / Following** toggle (hover shows "Unfollow"); unfollowed users stay in the list until you reopen it, so you can undo it.
+- **Artist page** (click a name): avatar, join date, followers, uploads, models, downloads and likes, a follow toggle and a link to the profile on Civitai, followed by the user's works with all filters. "← Back" returns to where you came from (artist list or feed, at the same scroll position).
+- **Everywhere else**: a click on a username (detail view, right-click menu) opens the artist page in this tab, and a follow toggle sits next to the username in every detail view.
 
 ### Search and tags
 The search field at the top of both panels understands three kinds of input, which you can mix in one line, e.g. `#animal #forest @someone misty morning`:
@@ -74,7 +81,7 @@ If a combination returns no results, the panel shows a notice with the buttons *
   - The quick button's action is shown in bold in the menu.
   - "Prompt + negative" respects the "None" target setting. The single and seed combinations always insert; if a target is set to "None", Auto is used for it. If an image has no seed, the combinations insert only the prompt.
   - Copy prompt, Copy seed, Copy all
-  - Recreate in workflow…, Open details, Works by @user, Open on Civitai
+  - Recreate in workflow…, Open details, Artist page: @user, Open on Civitai
   - **Save to collection** opens a submenu with all your collections; a checkmark shows where the image already is, and a click adds or removes it right away. The menu stays open, so you can tick several collections in a row. "New collection…" opens the detail view with the name field ready.
   - Entries for which the image has no data are greyed out.
 - **Detail view** (click on an image): **←/→** (or the arrows next to "Back") go to the previous/next artwork and load more at the end; **Esc** goes back to the grid.
@@ -87,7 +94,7 @@ If a combination returns no results, the panel shows a notice with the buttons *
   - **Parameters** including the **checkpoint** actually used (model name and version, linked to the Civitai model page)
   - **Resources**, grouped into checkpoint, LoRAs (with weight) and other (embeddings, upscalers …), each linked to Civitai. Civitai supplies an image's model versions. If they are missing, the plugin looks them up by the hashes in the metadata. Anything that can't be resolved is shown in grey without a link.
   - All metadata as JSON, link to the image on Civitai
-  - Clicking the **username** shows all works by that user.
+  - Clicking the **username** opens the artist page (Civitai Artists tab).
 
 ### Local models, downloads and "Recreate in workflow"
 
@@ -140,7 +147,7 @@ You need a recent ComfyUI frontend with sidebar tabs (roughly v1.3 or later).
 1. On civitai.com, create a key under **Account Settings → API Keys**. A full-access key is fine. A restricted key needs at least:
    - **Collections: read** and **Media: read** for viewing
    - **Collections: write** for saving to collections and for creating, editing and deleting them
-   - **User: read** and **Social: write** to see and set your own reactions
+   - **User: read** and **Social: write** to see and set your own reactions, and to see, follow and unfollow users
 2. Click ⚙ in either panel, enter the key and save. The key applies to both panels.
 
 The key is stored only on the server, in `config.json` in the plugin folder (file permissions `600`), and is never sent back to the browser. Alternatively, you can set the environment variable `CIVITAI_API_KEY`. When a key is set, the plugin sends it with every request, including the Discovery feed.

@@ -41,6 +41,7 @@ MAX_RESOURCE_LOOKUPS = 20
 # Model-version lookups are immutable enough to cache for the process lifetime.
 # key: ("id", 123) or ("hash", "ABCDEF1234") -> resource dict or None (not found)
 _RESOURCE_CACHE: dict[tuple, dict | None] = {}
+_USER_ID_CACHE: dict[str, int] = {}  # lowercase username -> Civitai user id
 
 
 class CivitaiError(Exception):
@@ -333,6 +334,83 @@ class CivitaiClient:
         raw = await self._trpc("reaction.getMyImageReactions", {"imageIds": ids})
         return {str(k): [r for r in v if r in REACTIONS] for k, v in (raw or {}).items() if isinstance(v, list)}
 
+    # ------------------------------------------------------------ following
+    async def get_following(self) -> list[dict]:
+        """Users the key's owner follows: [{id, username}], sorted by name (scope "User: read")."""
+        ids = await self._trpc("user.getFollowingUsers", None)
+        ids = [i if isinstance(i, int) else (i or {}).get("id") for i in (ids or [])]
+        ids = [i for i in ids if isinstance(i, int)]
+        users: list[dict] = []
+        for k in range(0, len(ids), 100):
+            chunk = ids[k : k + 100]
+            res = await self._trpc("user.getAll", {"ids": ",".join(map(str, chunk)), "limit": len(chunk)})
+            for u in res or []:
+                if isinstance(u, dict) and u.get("id") and u.get("username"):
+                    users.append(_user_row(u))
+                    _USER_ID_CACHE[u["username"].lower()] = u["id"]
+        return sorted(users, key=lambda u: u["username"].lower())
+
+    async def search_users(self, query: str, limit: int = 20) -> list[dict]:
+        """Find Civitai users by name: [{id, username, avatar, avatarNsfw}]."""
+        query = (query or "").strip().lstrip("@")
+        if len(query) < 2:
+            return []
+        res = await self._trpc("user.getAll", {"query": query, "limit": max(1, min(int(limit), 50))})
+        out = [_user_row(u) for u in res or [] if isinstance(u, dict) and u.get("username")]
+        for u in out:
+            _USER_ID_CACHE[u["username"].lower()] = u["id"]
+        return out
+
+    async def get_user(self, username: str) -> dict:
+        """Profile of one user (avatar, join date, counts) for the user page."""
+        if not USERNAME_RE.fullmatch(username or ""):
+            raise CivitaiError("Invalid username.", 400)
+        u = await self._trpc("user.getCreator", {"username": username})
+        if not isinstance(u, dict) or not u.get("id"):
+            raise CivitaiError(f"No Civitai user named {username}.", 404)
+        _USER_ID_CACHE[u["username"].lower()] = u["id"]
+        st = u.get("stats") or {}
+        pic = u.get("profilePicture") or {}
+        avatar_key = pic.get("url") or u.get("image")
+        return {
+            "id": u["id"],
+            "username": u["username"],
+            "avatar": _avatar_url(avatar_key, 160),
+            "avatarNsfw": pic.get("nsfwLevel") or 0,
+            "createdAt": u.get("createdAt"),
+            "deleted": bool(u.get("deletedAt")),
+            "banned": bool(u.get("bannedAt")),
+            "models": (u.get("_count") or {}).get("models"),
+            "stats": {
+                "followers": st.get("followerCountAllTime"),
+                "uploads": st.get("uploadCountAllTime"),
+                "downloads": st.get("downloadCountAllTime"),
+                "reactions": st.get("reactionCountAllTime"),
+                "likes": st.get("thumbsUpCountAllTime"),
+                "generations": st.get("generationCountAllTime"),
+            },
+            "links": [l.get("url") for l in (u.get("links") or []) if isinstance(l, dict) and str(l.get("url", "")).startswith("http")][:6],
+            "pageUrl": f"{self.base}/user/{quote(u['username'])}",
+        }
+
+    async def user_id(self, username: str) -> int:
+        if not USERNAME_RE.fullmatch(username or ""):
+            raise CivitaiError("Invalid username.", 400)
+        uid = _USER_ID_CACHE.get(username.lower())
+        if uid:
+            return uid
+        creator = await self._trpc("user.getCreator", {"username": username})
+        uid = (creator or {}).get("id")
+        if not isinstance(uid, int):
+            raise CivitaiError(f"No Civitai user named {username}.", 404)
+        _USER_ID_CACHE[username.lower()] = uid
+        return uid
+
+    async def toggle_follow(self, username: str) -> None:
+        """Follow / unfollow a user on Civitai (scope "Social: write")."""
+        uid = await self.user_id(username)
+        await self._trpc_mutation("user.toggleFollow", {"targetUserId": uid, "username": username})
+
     async def toggle_reaction(self, image_id: int, reaction: str) -> None:
         """Add or remove one of the key owner's reactions (tRPC; scope "Social: write")."""
         if reaction not in REACTIONS:
@@ -508,6 +586,21 @@ def _error_message(data: Any, text: str, status: int) -> str:
     if isinstance(data, dict) and isinstance(data.get("error"), str):
         return f"Civitai: {data['error']}"
     return f"Civitai request failed with HTTP {status}: {text[:200]}"
+
+
+def _avatar_url(key: str | None, width: int = 96) -> str | None:
+    if not key or not isinstance(key, str):
+        return None
+    return edge_url(key, f"width={width}", None, "image")
+
+
+def _user_row(u: dict) -> dict:
+    return {
+        "id": u.get("id"),
+        "username": u.get("username"),
+        "avatar": _avatar_url(u.get("avatarUrl") or u.get("image"), 96),
+        "avatarNsfw": u.get("avatarNsfw") or 0,
+    }
 
 
 def edge_url(key: str, params: str, name: str | None, media_type: str) -> str:

@@ -2,10 +2,11 @@
 
 *[English version](README.md)*
 
-Ein ComfyUI-Plugin mit zwei neuen Panels in der linken Seitenleiste:
+Ein ComfyUI-Plugin mit drei neuen Panels in der linken Seitenleiste:
 
 - 🧭 **Civitai Discovery**: der allgemeine Civitai-Feed mit Bildern und Videos
 - ❤ **Civitai Favoriten**: deine Collections und Reaktionen, inklusive Verwaltung der Collections
+- 👤 **Civitai Künstler**: der Feed der Künstler, denen du folgst, deine Gefolgt-Liste und Künstlerseiten
 
 In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen und Bilder in deine Civitai-Collections speichern. Gespeichert wird direkt auf Civitai, nicht nur lokal.
 
@@ -25,7 +26,6 @@ In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen
 - **Basismodell**: z. B. SD 1.x, SDXL, Pony, Illustrious, NoobAI, Flux, Krea, Qwen, Wan Video. Oben stehen die beliebtesten Familien, darunter alle weiteren. Civitai filtert direkt auf dem Server, deshalb funktioniert das auch bei seltenen Modellen.
 - Sortierung, Zeitraum und Basismodell stehen in einer Zeile. Darunter klappt **Erweitert** die übrigen Filter auf: Medientyp, Metadaten (mit, mit Prompt, ohne), Rating und NSFW verpixeln. Weichen dort Filter vom Standard ab, zeigt der eingeklappte Bereich ihre Anzahl, z. B. „Erweitert (1)“.
 - **Medientyp und Rating** werden ebenfalls auf dem Server gefiltert.
-- **Leute, denen du folgst** (👥-Button im Kopf): nur Werke der User, denen du auf Civitai folgst, mit derselben Sortierung, demselben Zeitraum und denselben Filtern. Braucht einen API-Key.
 - **Bilder mit einem Modell**: Der 🖼-Button neben einem Checkpoint oder einer LoRA in der Ressourcenliste zeigt die Galerie dieser Modellversion (gesamter Zeitraum). Klappt auch aus dem Favoriten-Tab, der dann zu Discovery wechselt.
 - Funktioniert auch ohne API-Key. Für Inhalte ab R über civitai.red und zum Speichern in Collections brauchst du aber einen Key.
 
@@ -37,6 +37,13 @@ In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen
   - **🗑** löscht sie nach einer Rückfrage. Die Bilder selbst bleiben erhalten.
   - Bearbeiten und Löschen gehen nur bei eigenen Collections.
 - **Filter**: Sortierung und Basismodell (mit Anzahl; nur Familien, die in der Ansicht vorkommen) in einer Zeile. Unter **Erweitert**: Medientyp, Metadaten, Rating und NSFW verpixeln.
+
+### Civitai Künstler
+Braucht einen API-Key.
+- **Standardansicht ist der Feed der Künstler, denen du folgst**, mit der üblichen Sortierung, Zeitraum, Basismodell und Filtern.
+- **Gefolgte Künstler** (Umschalter oben; danach führt er zurück zum Feed): alle, denen du auf Civitai folgst, mit Avatar. Das Suchfeld filtert die Liste und findet auch andere Künstler. Jede Zeile hat einen Schalter **Folgen / Gefolgt**; beim Drüberfahren zeigt er „Entfolgen“. Entfolgte bleiben in der Liste, bis du sie neu öffnest, damit du es rückgängig machen kannst.
+- **Künstlerseite** (Klick auf einen Namen): Avatar, Beitrittsdatum, Follower, Uploads, Modelle, Downloads und Likes, ein Folgen-Schalter und ein Link zum Profil auf Civitai. Darunter stehen die Werke mit allen Filtern. „← Zurück“ führt dorthin, wo du herkamst: Künstlerliste oder Feed, an derselben Scrollposition.
+- **Überall sonst**: Ein Klick auf einen Benutzernamen (Detailansicht, Rechtsklick-Menü) öffnet die Künstlerseite in diesem Tab, und neben dem Benutzernamen sitzt in jeder Detailansicht ein Folgen-Schalter.
 
 ### Suche und Tags
 Das Suchfeld oben in beiden Panels versteht drei Arten von Eingaben, auch gemischt in einer Zeile, z. B. `#animal #forest @someone misty morning`:
@@ -80,7 +87,7 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   - Die Aktion des Schnell-Buttons ist im Menü fett markiert.
   - „Prompt + Negativ“ beachtet die Ziel-Einstellung „Keiner“. Die Einzel- und Seed-Kombinationen übernehmen immer; steht ein Ziel auf „Keiner“, gilt dafür Auto. Fehlt einem Bild der Seed, übernehmen die Kombinationen nur den Prompt.
   - Prompt kopieren, Seed kopieren, Alles kopieren
-  - Im Workflow nachbauen…, Details öffnen, Werke von @User, Auf Civitai öffnen
+  - Im Workflow nachbauen…, Details öffnen, Künstlerseite: @User, Auf Civitai öffnen
   - **In Collection speichern** öffnet ein Untermenü mit all deinen Collections. Ein Häkchen zeigt, wo das Bild schon liegt, ein Klick fügt es hinzu oder entfernt es sofort. Das Menü bleibt offen, du kannst also mehrere Collections nacheinander anhaken. „Neue Collection…“ öffnet die Detailansicht mit dem Namensfeld.
   - Einträge, für die das Bild keine Daten hat, sind ausgegraut.
 - **Detailansicht** (Klick auf ein Bild): **←/→** (oder die Pfeile neben „Zurück“) springen zum vorherigen bzw. nächsten Werk und laden am Ende nach. **Esc** führt zurück zum Raster.
@@ -93,7 +100,7 @@ Liefert eine Kombination keine Treffer, zeigt das Panel einen Hinweis mit den Bu
   - **Parameter** mit dem tatsächlich verwendeten **Checkpoint** (Modellname und Version, verlinkt auf die Civitai-Modellseite)
   - **Ressourcen**, gegliedert in Checkpoint, LoRAs (mit Gewicht) und Sonstige (Embeddings, Upscaler …), jeweils mit Link zu Civitai. Civitai liefert die Modellversionen eines Bildes mit. Fehlen sie, sucht das Plugin anhand der Hashes in den Metadaten. Was sich nicht zuordnen lässt, erscheint grau ohne Link.
   - alle Metadaten als JSON, Link zum Bild auf Civitai
-  - Ein Klick auf den **Benutzernamen** zeigt alle Werke dieses Users.
+  - Ein Klick auf den **Benutzernamen** öffnet die Künstlerseite (Tab „Civitai Künstler“).
 
 ### Lokale Modelle, Downloads und „Im Workflow nachbauen“
 
@@ -151,7 +158,7 @@ Du brauchst ein aktuelles ComfyUI-Frontend mit Seitenleisten-Tabs (ab etwa v1.3)
 1. Auf civitai.com unter **Account Settings → API Keys** einen Key erstellen. Ein Key mit vollem Zugriff reicht. Bei eingeschränkten Keys braucht er mindestens:
    - **Collections: read** und **Media: read** zum Ansehen
    - **Collections: write** zum Speichern in Collections und zum Anlegen, Bearbeiten und Löschen
-   - **User: read** und **Social: write**, um eigene Reaktionen zu sehen und zu vergeben
+   - **User: read** und **Social: write**, um eigene Reaktionen zu sehen und zu vergeben sowie Usern zu folgen und zu entfolgen
 2. In einem der beiden Panels auf ⚙ klicken, den Key eintragen und speichern. Der Key gilt für beide Panels.
 
 Der Key wird nur serverseitig in `config.json` im Plugin-Ordner gespeichert (Dateirechte `600`) und nie an den Browser zurückgegeben. Alternativ kannst du die Umgebungsvariable `CIVITAI_API_KEY` setzen. Ist ein Key hinterlegt, schickt das Plugin ihn bei jeder Anfrage mit, auch beim Discovery-Feed.

@@ -175,7 +175,7 @@ const STRINGS = {
     ctxCopyPrompt: "Copy prompt",
     ctxCopySeed: "Copy seed",
     ctxDetails: "Open details",
-    ctxUser: "Works by @{user}",
+    ctxUser: "Artist page: @{user}",
     trendingNeedsKey: "Trending tags and searching all Civitai tags need an API key (⚙).",
     noTagsYet: "No tags in the loaded results yet.",
     normalWidth: "Back to sidebar width",
@@ -214,13 +214,38 @@ const STRINGS = {
     modelView: "Images made with {name}",
     showModelImages: "Show images made with this model",
     followingView: "People you follow",
-    following: "Feed of people you follow",
     historyTitle: "Prompt history",
     historyEmpty: "No prompts inserted yet. Everything you send to a node shows up here.",
     historyClear: "Clear history",
     prevItem: "Previous (←)",
     nextItem: "Next (→)",
     dragHint: "Drag onto the canvas: onto a Load Image node, a prompt node, or empty space",
+    follow: "Follow",
+    followingBtn: "Following",
+    unfollow: "Unfollow",
+    followHint: "Follow {user} on Civitai",
+    unfollowHint: "Unfollow {user} on Civitai",
+    followed: "You now follow {user}",
+    unfollowed: "You no longer follow {user}",
+    followFailed: "Could not change following",
+    followingGroup: "Following ({n})",
+    recentUsers: "Recently viewed",
+    noFollowing: "You don't follow anyone on Civitai yet.",
+    close: "Close",
+    titleUsers: "Civitai Artists",
+    peopleSearch: "Find an artist…",
+    followedFeed: "Feed of artists you follow",
+    backToPeople: "← Back",
+    followedArtists: "Followed Artists",
+    otherUsers: "Other artists",
+    joined: "Joined {date}",
+    statFollowers: "Followers",
+    statUploads: "Uploads",
+    statModels: "Models",
+    statDownloads: "Downloads",
+    statLikes: "Likes",
+    showArtist: "Artist page of {user}",
+    noUsersFound: "No artists found.",
   },
   de: {
     titleFavorites: "Civitai Favoriten",
@@ -384,7 +409,7 @@ const STRINGS = {
     ctxCopyPrompt: "Prompt kopieren",
     ctxCopySeed: "Seed kopieren",
     ctxDetails: "Details öffnen",
-    ctxUser: "Werke von @{user}",
+    ctxUser: "Künstlerseite: @{user}",
     trendingNeedsKey: "Trending-Tags und die Suche in allen Civitai-Tags brauchen einen API-Key (⚙).",
     noTagsYet: "In den geladenen Ergebnissen gibt es noch keine Tags.",
     normalWidth: "Zurück zur Seitenleiste",
@@ -423,13 +448,38 @@ const STRINGS = {
     modelView: "Bilder mit {name}",
     showModelImages: "Bilder mit diesem Modell zeigen",
     followingView: "Leute, denen du folgst",
-    following: "Feed der Leute, denen du folgst",
     historyTitle: "Prompt-Verlauf",
     historyEmpty: "Noch keine Prompts übernommen. Alles, was du in einen Node schickst, erscheint hier.",
     historyClear: "Verlauf leeren",
     prevItem: "Vorheriges (←)",
     nextItem: "Nächstes (→)",
     dragHint: "Auf die Arbeitsfläche ziehen: auf einen Load-Image-Node, einen Prompt-Node oder eine freie Stelle",
+    follow: "Folgen",
+    followingBtn: "Gefolgt",
+    unfollow: "Entfolgen",
+    followHint: "{user} auf Civitai folgen",
+    unfollowHint: "{user} auf Civitai entfolgen",
+    followed: "Du folgst jetzt {user}",
+    unfollowed: "Du folgst {user} nicht mehr",
+    followFailed: "Folgen konnte nicht geändert werden",
+    followingGroup: "Gefolgt ({n})",
+    recentUsers: "Zuletzt angesehen",
+    noFollowing: "Du folgst auf Civitai noch niemandem.",
+    close: "Schließen",
+    titleUsers: "Civitai Künstler",
+    peopleSearch: "Künstler suchen…",
+    followedFeed: "Feed der Künstler, denen du folgst",
+    backToPeople: "← Zurück",
+    followedArtists: "Gefolgte Künstler",
+    otherUsers: "Weitere Künstler",
+    joined: "Dabei seit {date}",
+    statFollowers: "Follower",
+    statUploads: "Uploads",
+    statModels: "Modelle",
+    statDownloads: "Downloads",
+    statLikes: "Likes",
+    showArtist: "Künstlerseite von {user}",
+    noUsersFound: "Keine Künstler gefunden.",
   },
 };
 
@@ -1082,6 +1132,77 @@ function timeAgo(ts) {
   return fmt.format(-Math.round(s / 86400), "day");
 }
 
+/* ------------------------------------------------------- following (Civitai) */
+/** The users the key's owner follows on Civitai, shared by both tabs. */
+const following = {
+  users: null, // [{id, username}] once loaded
+  set: new Set(), // lowercase usernames
+  listeners: new Set(),
+  loading: null,
+  reset() {
+    this.users = null;
+    this.set = new Set();
+    this.emit();
+  },
+  load(force = false) {
+    if (!shared.config?.hasKey) return Promise.resolve([]);
+    if (this.users && !force) return Promise.resolve(this.users);
+    this.loading ||= fetchJson(`${API}/following?domain=${encodeURIComponent(shared.domain)}`)
+      .then((r) => this.apply(r.users))
+      .catch(() => (this.users ||= []))
+      .finally(() => (this.loading = null));
+    return this.loading;
+  },
+  apply(users) {
+    this.users = Array.isArray(users) ? users : [];
+    this.set = new Set(this.users.map((u) => u.username.toLowerCase()));
+    this.emit();
+    return this.users;
+  },
+  has(name) {
+    return this.set.has(String(name || "").toLowerCase());
+  },
+  async toggle(name) {
+    const res = await postJson(`${API}/follow?domain=${encodeURIComponent(shared.domain)}`, { username: name });
+    this.apply(res.users);
+    toast("success", t(this.has(name) ? "followed" : "unfollowed", { user: name }));
+  },
+  emit() {
+    for (const fn of this.listeners) fn();
+    document.querySelectorAll(".cf-follow").forEach((b) => paintFollow(b));
+  },
+};
+/** Follow / unfollow toggle for a Civitai user. */
+function followButton(username) {
+  const b = h("button", { class: "cf-btn small cf-follow" });
+  b.dataset.user = username;
+  b.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!shared.config?.hasKey) return toast("warn", t("needKey"));
+    b.disabled = true;
+    try {
+      await following.toggle(username);
+    } catch (err) {
+      toast("error", t("followFailed"), String(err.message || err));
+    } finally {
+      b.disabled = false;
+    }
+  });
+  paintFollow(b);
+  following.load();
+  return b;
+}
+function paintFollow(b) {
+  const user = b.dataset.user;
+  const on = following.has(user);
+  b.classList.toggle("on", on);
+  b.title = t(on ? "unfollowHint" : "followHint", { user });
+  // following: "✓ Following", on hover "✕ Unfollow"
+  const parts = [h("span", { class: "cf-follow-on" }, h("i", { class: on ? "pi pi-check" : "pi pi-user-plus" }), " ", on ? t("followingBtn") : t("follow"))];
+  if (on) parts.push(h("span", { class: "cf-follow-off" }, h("i", { class: "pi pi-times" }), " ", t("unfollow")));
+  b.replaceChildren(...parts);
+}
+
 /* ------------------------------------------------------- shared state */
 /** Config (API key status) and the collection list, shared by both tabs. */
 const shared = {
@@ -1095,6 +1216,7 @@ const shared = {
   },
   setConfig(cfg) {
     this.config = cfg;
+    following.reset();
     this.invalidate("key");
   },
   /** {collections, reactions}; cached until invalidate(). */
@@ -1221,10 +1343,11 @@ function familyModels() {
 }
 
 class BrowserPanel {
-  /** mode: "favorites" | "discovery" */
+  /** mode: "favorites" | "discovery" | "users" (users: people list + user pages, feed-like grid) */
   constructor(mode) {
     this.mode = mode;
     this.isFav = mode === "favorites";
+    this.isUsers = mode === "users";
     const p = loadPrefs(mode);
     const common = loadPrefs("common");
     this.state = {
@@ -1245,7 +1368,7 @@ class BrowserPanel {
       advancedOpen: !!p.advancedOpen,
       user: "", // discovery: currently shown user (not persisted)
       model: null, // discovery: {id, name} of the model version whose images are shown (not persisted)
-      following: !!p.following, // discovery: feed of the users the key's owner follows
+      following: false, // users tab: showing the feed of the users the key's owner follows
       // prompt targets are shared by both tabs: "" = auto, "none", or a node id
       posTarget: typeof common.posTarget === "string" ? common.posTarget : "",
       negTarget: typeof common.negTarget === "string" ? common.negTarget : "",
@@ -1261,12 +1384,13 @@ class BrowserPanel {
     this.knownTags = new Map(); // id -> {id, name, count}: tags seen in loaded results
     this.root = this.build();
     shared.listeners.add((origin) => this.onSharedChange(origin));
+    if (this.isUsers) following.listeners.add(() => this.renderPeople?.());
     downloads.listeners.add((finished) => this.onDownloadsChanged(finished));
   }
 
   persist() {
     this.updateAdvancedBadge?.();
-    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "cloudOpen", "advancedOpen", "following"];
+    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "cloudOpen", "advancedOpen"];
     savePrefs(this.mode, Object.fromEntries(keys.map((k) => [k, this.state[k]])));
   }
 
@@ -1419,12 +1543,9 @@ class BrowserPanel {
     this.detailView = h("div", { class: "cf-detail", hidden: true });
 
     this.userLabel = h("span", { class: "cf-grow" });
-    this.userBar = h(
-      "div",
-      { class: "cf-userbar", hidden: true },
-      h("button", { class: "cf-btn", onclick: () => this.backFromUser() }, this.isFav ? t("backToFavs") : t("backToFeed")),
-      this.userLabel
-    );
+    this.userFollowSlot = h("span", {});
+    this.userBackBtn = h("button", { class: "cf-btn", onclick: () => this.backFromUser() }, this.isFav ? t("backToFavs") : this.isUsers ? t("backToPeople") : t("backToFeed"));
+    this.userBar = h("div", { class: "cf-userbar", hidden: true }, this.userBackBtn, this.userLabel, this.userFollowSlot);
 
     // favorites: source + collection management
     let sourceRow = null;
@@ -1446,8 +1567,8 @@ class BrowserPanel {
       this.formBox = h("div", { class: "cf-settings", hidden: true });
     }
 
-    const icon = this.isFav ? "pi pi-heart" : "pi pi-compass";
-    const title = this.isFav ? t("titleFavorites") : t("titleDiscovery");
+    const icon = this.isFav ? "pi pi-heart" : this.isUsers ? "pi cf-userstar" : "pi pi-compass";
+    const title = this.isFav ? t("titleFavorites") : this.isUsers ? t("titleUsers") : t("titleDiscovery");
     const root = h(
       "div",
       { class: "civitai-favorites" + (this.state.blurNsfw ? " cf-blur" : "") },
@@ -1455,13 +1576,6 @@ class BrowserPanel {
         "div",
         { class: "cf-header" },
         h("span", { class: "cf-title" }, h("i", { class: icon }), " ", title),
-        this.isFav
-          ? null
-          : (this.followBtn = h(
-              "button",
-              { class: "cf-icon" + (this.state.following ? " active" : ""), title: t("following"), onclick: () => this.setFollowing(!this.state.following) },
-              h("i", { class: "pi pi-users" })
-            )),
         h("button", { class: "cf-icon", title: t("historyTitle"), onclick: () => this.toggleHistory() }, h("i", { class: "pi pi-history" })),
         (this.fullBtn = h("button", { class: "cf-icon", title: t("fullWidth"), onclick: () => this.toggleFull() }, h("i", { class: "pi pi-window-maximize" }))),
         h("button", { class: "cf-icon", title: t("refresh"), onclick: () => this.init(true) }, h("i", { class: "pi pi-refresh" })),
@@ -1469,7 +1583,10 @@ class BrowserPanel {
       ),
       this.settingsBox,
       this.formBox,
-      h(
+      this.isUsers ? (this.artistsToggle = h("button", { class: "cf-btn cf-artists-toggle", hidden: true })) : null,
+      this.isUsers ? this.buildPeople() : null,
+      this.isUsers ? (this.profileBox = h("div", { class: "cf-profile", hidden: true })) : null,
+      (this.controlsBox = h(
         "div",
         { class: "cf-controls" },
         sourceRow,
@@ -1495,7 +1612,7 @@ class BrowserPanel {
           h("div", { class: "cf-row3" }, field(t("media"), mediaSel), field(t("meta"), metaSel), field(t("rating"), levelSel)),
           h("label", { class: "cf-check" }, blur, " ", t("blurNsfw"))
         ))
-      ),
+      )),
       this.notice,
       this.userBar,
       this.statusLine,
@@ -2054,7 +2171,7 @@ class BrowserPanel {
     const r = h("optgroup", { label: t("reactions") });
     for (const re of data.reactions || []) r.append(h("option", { value: `reaction:${re}` }, t(`reaction_${re}`)));
     sel.append(r);
-    this.userGroup = h("optgroup", { label: t("users") });
+    this.userGroup = h("optgroup", { label: t("recentUsers") });
     sel.append(this.userGroup);
     this.renderUserOptions();
 
@@ -2121,7 +2238,6 @@ class BrowserPanel {
     const v = this.viewStack?.pop();
     if (!v) return false;
     Object.assign(this.state, { user: v.user, model: v.model, following: v.following });
-    this.followBtn?.classList.toggle("active", !!v.following);
     if (this.isFav && v.source !== this.state.source) {
       this.state.source = v.source;
       if (!v.source.startsWith("user:")) this.state.lastFavSource = v.source;
@@ -2138,6 +2254,10 @@ class BrowserPanel {
     this.removedIds = v.removedIds;
     this.autoPages = 0;
     this.updateScopeBar();
+    if (this.isUsers) {
+      this.setUsersView(v.user ? "user" : v.following ? "feed" : "people");
+      if (v.user && this.profileUser !== v.user) this.renderProfile(v.user);
+    }
     this.closeDetail(true);
     this.resetGrid();
     this.appendTiles(this.items);
@@ -2155,6 +2275,10 @@ class BrowserPanel {
   showUser(username) {
     if (!username) return;
     this.state.recentUsers = [username, ...this.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
+    if (this.isUsers) {
+      this.pushView(); // from the feed or another user page: "Back" returns there
+      return this.openUser(username, true);
+    }
     this.pushView();
     if (this.isFav) this.setSource(`user:${username}`, true);
     else {
@@ -2162,6 +2286,15 @@ class BrowserPanel {
       this.persist();
       this.reload(true);
     }
+  }
+
+  /** A username was clicked: the artist page (Artists tab; there it opens in place). Without a key the works are shown here. */
+  openArtist(username) {
+    if (this.isUsers) return this.showUser(username);
+    if (!shared.config?.hasKey) return this.showUser(username);
+    this.state.recentUsers = [username, ...this.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
+    this.persist();
+    openInUsersTab(username);
   }
 
   /** Discovery: images made with one model version (opened from the resources list). */
@@ -2186,13 +2319,14 @@ class BrowserPanel {
   setFollowing(on) {
     if (on && !shared.config?.hasKey) return toast("warn", t("needKey"));
     this.state.following = on;
-    this.followBtn?.classList.toggle("active", on);
-    this.persist();
+    this.state.user = "";
     this.reload();
   }
 
   backFromUser() {
     if (this.popView()) return;
+    // users tab: back to the people list if the user came from there, else to the feed
+    if (this.isUsers) return this.state.user && this.userOrigin === "people" ? this.showPeople() : this.showFeed();
     if (!this.isFav) {
       // leave the innermost view: user, then model, then the followed feed
       if (this.state.user) this.state.user = "";
@@ -2208,6 +2342,167 @@ class BrowserPanel {
   currentUser() {
     if (this.isFav) return this.state.source.startsWith("user:") ? this.state.source.slice(5) : null;
     return this.state.user || null;
+  }
+
+  /* ---------- users tab: people list, user pages, followed feed ---------- */
+  buildPeople() {
+    this.peopleSearch = h("input", { type: "text", class: "cf-search-input", placeholder: t("peopleSearch"), autocomplete: "off" });
+    this.peopleList = h("div", { class: "cf-people-list" });
+    let timer = null;
+    this.peopleSearch.addEventListener("input", () => {
+      this.renderPeople();
+      clearTimeout(timer);
+      timer = setTimeout(() => this.searchPeople(), 350);
+    });
+    this.peopleSearch.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const q = this.peopleSearch.value.trim().replace(/^@/, "");
+      if (q) {
+        this.userOrigin = "people";
+        this.openUser(q, false);
+      }
+    });
+    this.peopleView = h(
+      "div",
+      { class: "cf-people" },
+      h("div", { class: "cf-row" }, this.peopleSearch),
+      this.peopleList
+    );
+    // unfollowed users stay listed (with "Follow") until the tab is reopened, so it can be undone
+    this.peopleShown = new Map();
+    return this.peopleView;
+  }
+  async searchPeople() {
+    const q = this.peopleSearch.value.trim().replace(/^@/, "");
+    const token = (this.peopleToken = (this.peopleToken || 0) + 1);
+    if (q.length < 2 || !shared.config?.hasKey) {
+      this.peopleResults = [];
+      return this.renderPeople();
+    }
+    try {
+      const res = await fetchJson(`${API}/users?query=${encodeURIComponent(q)}&domain=${encodeURIComponent(this.state.domain)}`);
+      if (token !== this.peopleToken) return;
+      this.peopleResults = res.users || [];
+    } catch {
+      this.peopleResults = [];
+    }
+    this.renderPeople();
+  }
+  personRow(u) {
+    const avatar = u.avatar
+      ? h("img", { class: "cf-avatar" + (u.avatarNsfw >= 4 ? " cf-nsfw-avatar" : ""), src: u.avatar, alt: "", loading: "lazy" })
+      : h("span", { class: "cf-avatar cf-avatar-empty" }, (u.username || "?")[0].toUpperCase());
+    return h(
+      "div",
+      { class: "cf-person" + (following.has(u.username) || !this.peopleShown.has(u.username.toLowerCase()) ? "" : " off") },
+      h("button", { class: "cf-person-main", title: t("showArtist", { user: u.username }), onclick: () => ((this.userOrigin = "people"), this.openUser(u.username, false)) }, avatar, h("span", { class: "cf-person-name" }, u.username)),
+      followButton(u.username)
+    );
+  }
+  renderPeople() {
+    if (!this.peopleList || this.peopleView.hidden) return;
+    if (!shared.config?.hasKey) return this.peopleList.replaceChildren(h("div", { class: "cf-message" }, t("noKey")));
+    for (const u of following.users || []) this.peopleShown.set(u.username.toLowerCase(), u);
+    const q = this.peopleSearch.value.trim().replace(/^@/, "").toLowerCase();
+    const mine = [...this.peopleShown.values()]
+      .filter((u) => !q || u.username.toLowerCase().includes(q))
+      .sort((a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: "base" }));
+    const others = (this.peopleResults || []).filter((u) => !this.peopleShown.has(u.username.toLowerCase()));
+    const rows = [];
+    if (following.users === null) rows.push(h("div", { class: "cf-hint" }, t("loading")));
+    else {
+      rows.push(h("div", { class: "cf-res-label" }, t("followingGroup", { n: following.users.length })));
+      rows.push(...(mine.length ? mine.map((u) => this.personRow(u)) : [h("div", { class: "cf-hint" }, q ? t("noUsersFound") : t("noFollowing"))]));
+    }
+    if (others.length) rows.push(h("div", { class: "cf-res-label" }, t("otherUsers")), ...others.map((u) => this.personRow(u)));
+    this.peopleList.replaceChildren(...rows);
+  }
+  /** Users tab views: "people" (list) | "user" (profile + works) | "feed" (followed users' feed). */
+  setUsersView(view) {
+    const people = view === "people";
+    // one toggle at the top: feed / artist page -> "Followed Artists ⌄" (opens the list); list -> back to the feed
+    const tg = this.artistsToggle;
+    tg.hidden = !shared.config?.hasKey;
+    tg.onclick = () => (people ? this.showFeed() : this.showPeople());
+    tg.classList.toggle("open", people);
+    tg.replaceChildren(
+      h("i", { class: people ? "pi pi-images" : "pi pi-users" }),
+      h("span", { class: "cf-grow" }, people ? t("followedFeed") : t("followedArtists")),
+      h("i", { class: people ? "pi pi-chevron-up" : "pi pi-chevron-down" })
+    );
+    this.peopleView.hidden = !people;
+    this.profileBox.hidden = view !== "user";
+    for (const el of [this.controlsBox, this.statusLine, this.listView]) el.hidden = people;
+    if (people) {
+      this.detailView.hidden = true;
+      this.userBar.hidden = true;
+    }
+  }
+  showFeed() {
+    this.state.user = "";
+    this.state.following = true;
+    this.userOrigin = null;
+    this.reload();
+  }
+  showPeople() {
+    this.viewStack = [];
+    this.profileUser = null;
+    this.state.user = "";
+    this.state.following = false;
+    this.requestId++;
+    this.loading = false;
+    this.items = [];
+    this.resetGrid();
+    this.closeDetail(true);
+    this.setUsersView("people");
+    this.peopleShown = new Map();
+    this.renderPeople();
+    following.load(true).then(() => this.renderPeople());
+  }
+  /** A user's page: profile header + their works (with the usual filters). */
+  openUser(username, keepStack) {
+    this.state.user = username;
+    this.state.following = false;
+    this.reload(keepStack);
+  }
+  async renderProfile(username) {
+    this.profileUser = username;
+    const box = this.profileBox;
+    const back = h("button", { class: "cf-btn", onclick: () => this.backFromUser() }, t("backToPeople"));
+    box.replaceChildren(h("div", { class: "cf-profile-top" }, back), h("div", { class: "cf-hint" }, t("loading")));
+    let u;
+    try {
+      u = await fetchJson(`${API}/user?username=${encodeURIComponent(username)}&domain=${encodeURIComponent(this.state.domain)}`);
+    } catch (e) {
+      if (this.state.user !== username) return;
+      return box.replaceChildren(h("div", { class: "cf-profile-top" }, back, h("span", { class: "cf-profile-name" }, username)), h("div", { class: "cf-message error" }, String(e.message || e)));
+    }
+    if (this.state.user !== username) return;
+    const avatar = u.avatar
+      ? h("img", { class: "cf-avatar big" + (u.avatarNsfw >= 4 ? " cf-nsfw-avatar" : ""), src: u.avatar, alt: "" })
+      : h("span", { class: "cf-avatar big cf-avatar-empty" }, u.username[0].toUpperCase());
+    const joined = u.createdAt ? new Date(u.createdAt).toLocaleDateString(locale(), { year: "numeric", month: "long" }) : "";
+    const st = u.stats || {};
+    const stat = (label, n) => (n != null ? h("div", { class: "cf-stat" }, h("b", {}, formatCount(n)), h("span", {}, label)) : null);
+    box.replaceChildren(
+      h("div", { class: "cf-profile-top" }, back, h("a", { class: "cf-btn", href: u.pageUrl, target: "_blank", rel: "noopener" }, h("i", { class: "pi pi-external-link" }), " ", t("openCivitai"))),
+      h(
+        "div",
+        { class: "cf-profile-head" },
+        avatar,
+        h("div", { class: "cf-profile-id" }, h("div", { class: "cf-profile-name" }, u.username), joined ? h("div", { class: "cf-hint" }, t("joined", { date: joined })) : null),
+        shared.config?.hasKey ? followButton(u.username) : null
+      ),
+      h(
+        "div",
+        { class: "cf-stats" },
+        stat(t("statFollowers"), st.followers),
+        stat(t("statUploads"), st.uploads),
+        stat(t("statModels"), u.models),
+        stat(t("statDownloads"), st.downloads),
+        stat(t("statLikes"), st.likes)
+      )
+    );
   }
 
   /* ---------- favorites: collection management ---------- */
@@ -2316,12 +2611,21 @@ class BrowserPanel {
         : !this.isFav && this.state.following
           ? t("followingView")
           : "";
-    this.userBar.hidden = !scope;
+    // artists tab: the toggle at the top says what is shown; the artist page has its own back button
+    this.userBar.hidden = !scope || this.isUsers;
     this.userLabel.textContent = scope;
+    if (user && shared.config?.hasKey) this.userFollowSlot.replaceChildren(followButton(user));
+    else this.userFollowSlot.replaceChildren();
   }
   /** keepStack: a user/model view was just pushed; anything else (filters, search) starts over. */
   async reload(keepStack = false) {
     if (!keepStack) this.viewStack = [];
+    if (this.isUsers) {
+      if (!shared.config?.hasKey) return this.showPeople(); // shows "needs a key"
+      if (!this.state.user) this.state.following = true; // default: feed of the people you follow
+      this.setUsersView(this.state.user ? "user" : "feed");
+      if (this.state.user && this.profileUser !== this.state.user) this.renderProfile(this.state.user);
+    }
     this.updateScopeBar();
     this.updateKeyStatus();
     this.items = [];
@@ -2773,7 +3077,10 @@ class BrowserPanel {
           "span",
           { class: "cf-grow" },
           item.username
-            ? h("button", { class: "cf-user", title: t("showUser", { user: item.username }), onclick: () => this.showUser(item.username) }, h("i", { class: "pi pi-user" }), " ", item.username)
+            ? [
+                h("button", { class: "cf-user", title: t("showArtist", { user: item.username }), onclick: () => this.openArtist(item.username) }, h("i", { class: "pi pi-user" }), " ", item.username),
+                shared.config?.hasKey ? followButton(item.username) : null,
+              ]
             : ""
         ),
         h("a", { class: "cf-btn", href: item.pageUrl, target: "_blank", rel: "noopener" }, h("i", { class: "pi pi-external-link" }), " ", t("openCivitai"))
@@ -3802,7 +4109,7 @@ class BrowserPanel {
     sep();
     add("pi-window-maximize", t("ctxDetails"), () => this.openDetail(item));
     entries.push({ icon: "pi-bookmark", label: t("saveToCollection"), enabled: true, submenu: (anchor) => this.collectionSubmenu(item, anchor) });
-    if (item.username) add("pi-user", t("ctxUser", { user: item.username }), () => this.showUser(item.username));
+    if (item.username) add("pi-user", t("ctxUser", { user: item.username }), () => this.openArtist(item.username));
     add("pi-external-link", t("openCivitai"), () => window.open(item.pageUrl, "_blank", "noopener"));
 
     const menu = h(
@@ -4240,6 +4547,18 @@ document.addEventListener("scroll", closeContextMenu, true);
 /* ------------------------------------------------------------- register */
 const panels = new Map();
 
+/** Show a user's page in the Civitai Users tab (from Discovery / Favorites). */
+function openInUsersTab(username) {
+  let p = panels.get("users");
+  if (!p) panels.set("users", (p = new BrowserPanel("users")));
+  p.state.recentUsers = [username, ...p.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
+  const store = app.extensionManager?.sidebarTab;
+  if (store && store.activeSidebarTabId !== "civitai-users") store.toggleSidebarTab?.("civitai-users");
+  p.userOrigin = null;
+  if (p.initialized) p.openUser(username, false);
+  else p.state.user = username; // init() loads it
+}
+
 function registerTab(mode, id, icon, title) {
   app.extensionManager.registerSidebarTab({
     id,
@@ -4280,5 +4599,6 @@ app.registerExtension({
     }
     registerTab("discovery", "civitai-discovery", "pi pi-compass", t("titleDiscovery"));
     registerTab("favorites", "civitai-favorites", "pi pi-heart", t("titleFavorites"));
+    registerTab("users", "civitai-users", "pi cf-userstar", t("titleUsers"));
   },
 });
