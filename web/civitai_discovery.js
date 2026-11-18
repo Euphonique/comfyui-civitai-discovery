@@ -140,6 +140,8 @@ const STRINGS = {
     semanticUnavailable: "Civitai's text search isn't enabled for your account/API key (it needs a full-access key and is still being rolled out). Falling back to filtering the prompts of the loaded images.",
     emptyFilters: "No results for this combination of filters.",
     widenPeriod: "Period: all time",
+    emptySortPeriod: "Nothing found. With “{sort}” and “{period}”, Civitai only shows images that were collected or commented on within that period, which is often none for a tag or base model. Sorting by reactions or a longer period finds them.",
+    sortToReactions: "Sort: most reactions",
     resetFilters: "Reset search & filters",
     search: "Search",
     tagCloud: "Tags",
@@ -347,6 +349,8 @@ const STRINGS = {
     semanticUnavailable: "Die Civitai-Textsuche ist für deinen Account/API-Key nicht freigeschaltet (sie braucht einen Key mit vollem Zugriff und wird noch schrittweise eingeführt). Stattdessen werden die Prompts der geladenen Bilder gefiltert.",
     emptyFilters: "Keine Treffer für diese Kombination von Filtern.",
     widenPeriod: "Zeitraum: Gesamt",
+    emptySortPeriod: "Nichts gefunden. Bei „{sort}“ und „{period}“ zeigt Civitai nur Bilder, die in diesem Zeitraum gesammelt bzw. kommentiert wurden, und das sind bei einem Tag oder Basismodell oft keine. Mit Sortierung nach Reaktionen oder einem längeren Zeitraum findest du sie.",
+    sortToReactions: "Sortierung: Meiste Reaktionen",
     resetFilters: "Suche & Filter zurücksetzen",
     search: "Suchen",
     tagCloud: "Tags",
@@ -1348,7 +1352,7 @@ class BrowserPanel {
       () => (this.isFav ? this.renderGrid() : this.reload())
     ));
     const levelSel = select("browsingLevel", NSFW_LEVELS, () => this.reload());
-    const sortSel = select(
+    const sortSel = (this.sortSel = select(
       "sort",
       this.isFav
         ? [
@@ -1364,7 +1368,7 @@ class BrowserPanel {
             { v: "Newest", label: t("sortNewest") },
           ],
       () => this.reload()
-    );
+    ));
     const periodSel = (this.periodSel = select(
       "period",
       ["Day", "Week", "Month", "Year", "AllTime"].map((v) => ({ v, label: t(`period_${v}`) })),
@@ -2410,7 +2414,21 @@ class BrowserPanel {
     this.emptyActions.hidden = true;
     if (!this.loading) {
       const filtered = this.state.tags.length || this.state.textFilter || this.state.bmFilter !== "all" || this.state.mediaFilter !== "all" || this.state.metaFilter !== "all";
-      if (!shown && filtered) {
+      // Civitai: "Most collected/commented" + a period = collected/commented *within* that period
+      const metricPeriod =
+        !this.isFav && !this.useSemantic() && !this.state.model && ["Most Collected", "Most Comments"].includes(this.state.sort) && this.state.period !== "AllTime";
+      if (!this.items.length && metricPeriod) {
+        const sortLabel = this.sortSel?.selectedOptions?.[0]?.textContent || this.state.sort;
+        const periodLabel = this.periodSel?.selectedOptions?.[0]?.textContent || this.state.period;
+        this.showMessage(t("emptySortPeriod", { sort: sortLabel, period: periodLabel }));
+        const btns = [
+          h("button", { class: "cf-btn primary", onclick: () => this.setSort("Most Reactions") }, t("sortToReactions")),
+          h("button", { class: "cf-btn", onclick: () => this.setPeriod("AllTime") }, t("widenPeriod")),
+        ];
+        if (filtered) btns.push(h("button", { class: "cf-btn", onclick: () => this.resetFilters() }, t("resetFilters")));
+        this.emptyActions.replaceChildren(...btns);
+        this.emptyActions.hidden = false;
+      } else if (!shown && filtered) {
         this.showMessage(this.items.length ? t("emptyFiltered") : t("emptyFilters"));
         const btns = [];
         if (!this.isFav && !this.useSemantic() && this.state.period !== "AllTime")
@@ -2422,6 +2440,12 @@ class BrowserPanel {
       else if (!shown) this.showMessage(t("emptyFiltered"));
       else this.showMessage(null);
     }
+  }
+  setSort(v) {
+    this.state.sort = v;
+    if (this.sortSel) this.sortSel.value = v;
+    this.persist();
+    this.reload();
   }
   setPeriod(v) {
     this.state.period = v;

@@ -164,6 +164,7 @@ Civitai only delivers content rated R and above via **civitai.red**. Through civ
 
 ## Technical notes
 
+- **"Most collected" / "Most comments" with a period**: Civitai then only returns images that were collected or commented on *within* that period, so a tag or base model often yields nothing for "Week" or "Month" while "Most reactions" finds plenty. The panel explains this when it happens and offers to switch the sort or the period.
 - **Discovery** uses the public REST API (`GET /api/v1/images` with `sort`, `period`, `type`, `baseModels`, `username`, `tags`, `withTags`).
 - **Text search** uses the tRPC procedure `semanticImageSearch.search`. Civitai enables it per feature flag for only some accounts, and it needs a full-access API key. If Civitai answers with 401/403, the plugin falls back to the prompt filter for the current session.
 - **Tag suggestions and trending tags** come from the tRPC endpoints `tag.getAll` and `tag.getTrending` and therefore need an API key. The "In the results" tag cloud and the image tags work without a key.
