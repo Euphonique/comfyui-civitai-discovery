@@ -158,12 +158,12 @@ class LocalIndex:
         self._save()
 
     # ------------------------------------------------------------ lookup
-    def lookup(self, resources: list[dict]) -> dict:
+    def lookup(self, resources: list[dict], allow_hash: bool = True) -> dict:
         """resources: [{key, hashes: [SHA256/AutoV2...], sizeKB, fileName}] -> {key: {type, name, by}}.
 
         Known hashes (cache / sidecar files) are matched first. Files whose size
-        equals the Civitai file size are hashed on demand, so nothing is ever
-        indexed in bulk.
+        equals the Civitai file size are hashed on demand (unless allow_hash is
+        False), so nothing is ever indexed in bulk.
         """
         self.scan()
         with self._hash_lock:
@@ -186,7 +186,7 @@ class LocalIndex:
                 hit = next((by_hash[h] for h in want if h in by_hash), None) or next(
                     (by_hash[h[:10]] for h in want if len(h) == 64 and h[:10] in by_hash), None
                 )
-                if not hit and want and isinstance(r.get("sizeKB"), (int, float)):
+                if not hit and allow_hash and want and isinstance(r.get("sizeKB"), (int, float)):
                     kb = int(r["sizeKB"])
                     for cand in [c for d in (-1, 0, 1) for c in sizes.get(kb + d, [])]:
                         sha = self._hash_now(cand[2])
@@ -218,6 +218,12 @@ class LocalIndex:
                 self._cache[path] = {"size": st.st_size, "mtime": int(st.st_mtime), "sha256": sha}
         return sha
 
+    def rescan(self) -> int:
+        """Re-read the model folders now and forget cached hashes of files that are gone."""
+        self.scan(force=True)
+        self._save()
+        return len(self._files)
+
     def lists(self) -> dict:
         """Relative file names per folder type, as ComfyUI's combo widgets show them."""
         out = {}
@@ -232,5 +238,9 @@ class LocalIndex:
 INDEX = LocalIndex()
 
 
-async def lookup(resources: list[dict]) -> dict:
-    return await asyncio.to_thread(INDEX.lookup, resources)
+async def lookup(resources: list[dict], allow_hash: bool = True) -> dict:
+    return await asyncio.to_thread(INDEX.lookup, resources, allow_hash)
+
+
+async def rescan() -> int:
+    return await asyncio.to_thread(INDEX.rescan)

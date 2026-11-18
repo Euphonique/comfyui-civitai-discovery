@@ -52,6 +52,7 @@ The search field at the top of both panels understands three kinds of input, whi
 - **Without #**: Enter always runs a text search (the first suggestion, preselected). Below it, the field suggests matching tags; click one to use it as a tag. These are the tags from the loaded results with their counts and, with an API key, all matching tags on Civitai. Selected tags appear as chips and can be removed with ×. Multiple tags are combined with AND.
   - In **Discovery**, Civitai does the filtering, so the search covers the whole feed.
   - In **Favorites**, filtering happens within the loaded images.
+- **Exclude with `-`**: `-#tag` hides every image with that tag, `-word` every image whose prompt contains the word, e.g. `#forest -#woman -girl`. Multi-word tags work as above (`-#star_trek`, `-#"star trek"`). Right-clicking a tag in the tag cloud or in the detail view excludes it too. Civitai's API cannot exclude, so this filters the loaded images locally; excluded tags appear as red chips (tags you search for are blue), are remembered, and are removed with × or "Clear all".
 - **@user**: shows all works by that user.
 - **Free text** (all words without `#` or `@`), combinable with tags, base model, media type and user:
   - **Civitai text search:** Civitai has a new semantic image search, but only enables it for some accounts (gradual rollout). It also needs a full-access API key. If it is enabled for you, Discovery uses it to search all images on Civitai. The chip then reads "Search "…"".
@@ -70,7 +71,7 @@ If a combination returns no results, the panel shows a notice with the buttons *
 - **Masonry grid** with infinite scroll. Videos play on hover, and a `META` badge marks items with metadata.
 - **Drag & drop** an artwork onto the canvas: onto a **Load Image** node it sets the image, onto a **prompt node** it inserts the prompt (the negative one if that node feeds a sampler's `negative` input), onto a **sampler** it sets seed/steps/CFG, and onto empty space it creates a new Load Image node there. In full width the panel fades out while dragging so you can reach the canvas.
 - **Prompt history** (🕘 button in the header): the last 50 artworks whose prompts you sent to a node, newest first, shared by both tabs and stored on the server (`history.json`). Each entry can be inserted again (prompt + negative, prompt only, seed), copied, or opened in the detail view.
-- **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Recreate in workflow…". All context-menu actions that insert something into the workflow are available.
+- **Quick button**: Hovering over an image shows a button. You choose what it does in the settings (⚙) under **Quick button on artworks**; the default is "Recreate in workflow…". All context-menu actions that insert something into the workflow are available. The small chevron next to it opens all actions. In the detail view the same button sits at the top, with the action's name: a click runs it, the chevron opens the other actions (insert prompts, seed/sampler, load workflow, copy).
 - **Tooltip**: Resting on an image for a moment shows a compact preview: prompt (shortened), negative prompt, parameters, tags, reactions and user.
 - **Context menu** (right-click on an image):
   - Prompt + negative → nodes, Prompt + negative + seed
@@ -148,9 +149,22 @@ You need a recent ComfyUI frontend with sidebar tabs (roughly v1.3 or later).
    - **Collections: read** and **Media: read** for viewing
    - **Collections: write** for saving to collections and for creating, editing and deleting them
    - **User: read** and **Social: write** to see and set your own reactions, and to see, follow and unfollow users
-2. Click ⚙ in either panel, enter the key and save. The key applies to both panels.
+2. Click ⚙ in any panel, enter the key and save. The key applies to all panels. Alternatively, use ComfyUI's settings (Settings → **Civitai Discovery**), which also hold the domain and the quick button. Both places stay in sync, and the key itself is only stored by the plugin on the server, not in ComfyUI's settings file.
 
 The key is stored only on the server, in `config.json` in the plugin folder (file permissions `600`), and is never sent back to the browser. Alternatively, you can set the environment variable `CIVITAI_API_KEY`. When a key is set, the plugin sends it with every request, including the Discovery feed.
+
+### ComfyUI settings
+
+Under Settings → **Civitai Discovery** you find, besides the API key, domain and quick button (which stay in sync with the ⚙ menu of the panels):
+
+- **Panels**: one sidebar tab per panel, or a single "Civitai" tab whose title (with a chevron) switches between Discovery, Artists and Favorites. Artists and Favorites can also be hidden completely; artist names then open the works in Discovery. These three apply after reloading the page.
+- **Gallery**: videos in the gallery play on hover (default), while visible, or not at all (still image); videos in the detail view start automatically or not. Videos always pause when they are out of view.
+- **Start view**: sort, period and rating Discovery starts with, and NSFW blur for all panels; "Last used" keeps your last choice.
+- **Local models**: check for local copies by hash (exact), by hash sidecars and file name only (no hashing), or not at all; plus a button to re-read the model folders.
+- **Prompt history**: number of entries kept (10–300) and a button to clear it.
+- **Recreate in workflow**: whether the seed is set to "fixed".
+
+The thumbnail size (small / medium / large) is a small dropdown right above the thumbnails, next to "… of … loaded".
 
 ### Saved settings
 

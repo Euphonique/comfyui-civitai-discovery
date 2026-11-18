@@ -34,7 +34,7 @@ PREFS_PATH = Path(__file__).parent / "prefs.json"
 PREFS_MAX_BYTES = 64 * 1024
 # prompts sent to nodes (prompt history), separate because prompts can be long
 HISTORY_PATH = Path(__file__).parent / "history.json"
-HISTORY_MAX_BYTES = 512 * 1024
+HISTORY_MAX_BYTES = 2 * 1024 * 1024  # up to 300 entries with long prompts
 ENV_KEY = "CIVITAI_API_KEY"
 
 
@@ -412,10 +412,20 @@ async def post_local(request: web.Request) -> web.Response:
     try:
         body = await _json_body(request)
         res = [r for r in (body.get("resources") or []) if isinstance(r, dict)][:50]
-        matches = await local_models.lookup(res)
+        matches = await local_models.lookup(res, allow_hash=body.get("hash") is not False)
     except Exception as e:  # noqa: BLE001
         return _err(e)
     return web.json_response({"matches": matches})
+
+
+@routes.post(f"{PREFIX}/local/rescan")
+async def post_local_rescan(request: web.Request) -> web.Response:
+    """Re-read the model folders (e.g. after copying models in by hand)."""
+    try:
+        files = await local_models.rescan()
+    except Exception as e:  # noqa: BLE001
+        return _err(e)
+    return web.json_response({"files": files})
 
 
 @routes.get(f"{PREFIX}/model_folders")

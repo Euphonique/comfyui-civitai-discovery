@@ -148,11 +148,74 @@ const STRINGS = {
     tagsInResults: "In the results",
     trendingTags: "Trending on Civitai",
     promptContains: "Prompt contains “{q}”",
+    settingsCivitai: "Civitai",
+    settingsPanels: "Panels",
+    moreSettings: "More settings in ComfyUI…",
+    moreActions: "More actions",
+    noActions: "No metadata",
+    settingsGallery: "Gallery",
+    settingsStart: "Start view",
+    settingsLocal: "Local models",
+    settingsHistory: "Prompt history",
+    settingsRecreate: "Recreate in workflow",
+    reloadToApply: "Reload the page (F5) to apply the new panel layout.",
+    set_layout: "Panel layout",
+    set_layout_hint: "Separate sidebar tabs, or a single “Civitai” tab whose title switches between the panels. Applies after reloading the page.",
+    layoutTabs: "One sidebar tab per panel",
+    layoutSingle: "One tab with a panel switcher",
+    set_showArtists: "Show the Civitai Artists panel",
+    set_showArtists_hint: "Turned off, artist names open the artist's works in Discovery. Applies after reloading the page.",
+    set_showFavorites: "Show the Civitai Favorites panel",
+    set_showFavorites_hint: "Applies after reloading the page.",
+    switchPanel: "Switch panel",
+    set_gridVideos: "Videos in the gallery",
+    set_gridVideos_hint: "Playing videos keep the graphics card busy. They always pause when scrolled out of view or when the panel is hidden.",
+    videosHover: "Play on hover",
+    videosVisible: "Play while visible",
+    videosOff: "Don't play (still image)",
+    set_detailAutoplay: "Play videos in the detail view automatically",
+    set_detailAutoplay_hint: "Off: the video starts with its play button.",
+    startLast: "Last used",
+    set_startSort: "Discovery: sort on start",
+    set_startSort_hint: "“Last used” keeps what you chose last time.",
+    set_startPeriod: "Discovery: period on start",
+    set_startPeriod_hint: "“Last used” keeps what you chose last time.",
+    set_startRating: "Discovery: rating on start",
+    set_startRating_hint: "“Last used” keeps what you chose last time.",
+    set_startBlur: "Blur NSFW on start (all panels)",
+    set_startBlur_hint: "“Last used” keeps each panel's checkbox as you left it.",
+    blurOn: "On",
+    blurOff: "Off",
+    set_localCheck: "Check for local copies",
+    set_localCheck_hint: "Marks resources you already have. “By hash” is exact: it uses known hashes (LoRA Manager, Stability Matrix, .sha256 files) and hashes files of the right size once, which can take a moment for large models.",
+    localHash: "By hash (exact)",
+    localName: "By hash sidecars and file name only",
+    localOff: "Off",
+    set_rescan: "Re-read model folders",
+    set_rescan_hint: "After copying models in by hand. Also forgets cached hashes of files that are gone.",
+    rescanNow: "Re-read now",
+    rescanDone: "{n} model files found",
+    set_historySize: "Entries kept",
+    set_historySize_hint: "How many prompts the history keeps (10–300).",
+    set_clearHistory: "Clear prompt history",
+    set_clearHistory_hint: "Removes all entries from the prompt history.",
+    clearHistoryNow: "Clear",
+    clearHistoryConfirm: "Delete the whole prompt history?",
+    historyClearedShort: "History cleared",
+    set_fixedSeed: "Set the seed to “fixed”",
+    set_fixedSeed_hint: "So the recreated seed isn't changed on the next run.",
+    tileSize: "Thumbnail size",
+    tileSize_s: "Small",
+    tileSize_m: "Medium",
+    tileSize_l: "Large",
+    keyStored: "Key saved",
+    noKeyShort: "No key saved",
+    excludedHint: "Hidden: images with this tag or word in the prompt are not shown",
     searchText: "Search “{q}”",
     searchUser: "Works by @{q}",
     clearAll: "Clear all",
     tags: "Tags",
-    tagHint: "Click to search for this tag",
+    tagHint: "Click: search for this tag · right-click: hide images with it",
     textFilterHint: "Civitai has no full-text image search; this filters the prompts of the loaded images.",
     tagNotFound: "Tag not found: {tags}. Searching it as text instead.",
     advanced: "Advanced",
@@ -382,11 +445,74 @@ const STRINGS = {
     tagsInResults: "In den Ergebnissen",
     trendingTags: "Trending auf Civitai",
     promptContains: "Prompt enthält „{q}“",
+    settingsCivitai: "Civitai",
+    settingsPanels: "Panels",
+    moreSettings: "Weitere Einstellungen in ComfyUI…",
+    moreActions: "Weitere Aktionen",
+    noActions: "Keine Metadaten",
+    settingsGallery: "Galerie",
+    settingsStart: "Startansicht",
+    settingsLocal: "Lokale Modelle",
+    settingsHistory: "Prompt-Verlauf",
+    settingsRecreate: "Im Workflow nachbauen",
+    reloadToApply: "Seite neu laden (F5), damit die neue Panel-Anordnung gilt.",
+    set_layout: "Panel-Anordnung",
+    set_layout_hint: "Eigene Tabs in der Seitenleiste, oder ein einziger Tab „Civitai“, dessen Überschrift zwischen den Panels umschaltet. Gilt nach dem Neuladen der Seite.",
+    layoutTabs: "Ein Tab pro Panel",
+    layoutSingle: "Ein Tab mit Umschalter",
+    set_showArtists: "Panel Civitai Künstler anzeigen",
+    set_showArtists_hint: "Ausgeschaltet öffnen Künstlernamen die Werke in Discovery. Gilt nach dem Neuladen der Seite.",
+    set_showFavorites: "Panel Civitai Favoriten anzeigen",
+    set_showFavorites_hint: "Gilt nach dem Neuladen der Seite.",
+    switchPanel: "Panel wechseln",
+    set_gridVideos: "Videos in der Galerie",
+    set_gridVideos_hint: "Laufende Videos beschäftigen die Grafikkarte. Außerhalb des sichtbaren Bereichs und bei ausgeblendetem Panel halten sie immer an.",
+    videosHover: "Beim Drüberfahren abspielen",
+    videosVisible: "Abspielen, solange sichtbar",
+    videosOff: "Nicht abspielen (Standbild)",
+    set_detailAutoplay: "Videos in der Detailansicht automatisch abspielen",
+    set_detailAutoplay_hint: "Aus: Das Video startet über seinen Play-Button.",
+    startLast: "Zuletzt verwendet",
+    set_startSort: "Discovery: Sortierung beim Start",
+    set_startSort_hint: "„Zuletzt verwendet“ behält deine letzte Auswahl.",
+    set_startPeriod: "Discovery: Zeitraum beim Start",
+    set_startPeriod_hint: "„Zuletzt verwendet“ behält deine letzte Auswahl.",
+    set_startRating: "Discovery: Rating beim Start",
+    set_startRating_hint: "„Zuletzt verwendet“ behält deine letzte Auswahl.",
+    set_startBlur: "NSFW beim Start verpixeln (alle Panels)",
+    set_startBlur_hint: "„Zuletzt verwendet“ lässt das Häkchen jedes Panels, wie du es verlassen hast.",
+    blurOn: "An",
+    blurOff: "Aus",
+    set_localCheck: "Nach lokalen Kopien suchen",
+    set_localCheck_hint: "Markiert Ressourcen, die du schon hast. „Per Hash“ ist exakt: Es nutzt bekannte Hashes (LoRA Manager, Stability Matrix, .sha256-Dateien) und hasht Dateien passender Größe einmalig, was bei großen Modellen etwas dauern kann.",
+    localHash: "Per Hash (exakt)",
+    localName: "Nur Hash-Begleitdateien und Dateiname",
+    localOff: "Aus",
+    set_rescan: "Modellordner neu einlesen",
+    set_rescan_hint: "Nach dem Kopieren von Modellen per Hand. Vergisst auch gespeicherte Hashes von Dateien, die es nicht mehr gibt.",
+    rescanNow: "Jetzt einlesen",
+    rescanDone: "{n} Modelldateien gefunden",
+    set_historySize: "Gespeicherte Einträge",
+    set_historySize_hint: "Wie viele Prompts der Verlauf behält (10–300).",
+    set_clearHistory: "Prompt-Verlauf löschen",
+    set_clearHistory_hint: "Entfernt alle Einträge aus dem Prompt-Verlauf.",
+    clearHistoryNow: "Löschen",
+    clearHistoryConfirm: "Den ganzen Prompt-Verlauf löschen?",
+    historyClearedShort: "Verlauf gelöscht",
+    set_fixedSeed: "Seed auf „fixed“ stellen",
+    set_fixedSeed_hint: "Damit der übernommene Seed beim nächsten Lauf nicht verändert wird.",
+    tileSize: "Kachelgröße",
+    tileSize_s: "Klein",
+    tileSize_m: "Mittel",
+    tileSize_l: "Groß",
+    keyStored: "Key gespeichert",
+    noKeyShort: "Kein Key gespeichert",
+    excludedHint: "Ausgeblendet: Bilder mit diesem Tag bzw. diesem Wort im Prompt werden nicht angezeigt",
     searchText: "„{q}“ suchen",
     searchUser: "Werke von @{q}",
     clearAll: "Alle entfernen",
     tags: "Tags",
-    tagHint: "Klicken, um nach diesem Tag zu suchen",
+    tagHint: "Klick: nach diesem Tag suchen · Rechtsklick: Bilder damit ausblenden",
     textFilterHint: "Civitai hat keine Volltextsuche für Bilder; das filtert die Prompts der geladenen Bilder.",
     tagNotFound: "Tag nicht gefunden: {tags}. Wird stattdessen als Text gesucht.",
     advanced: "Erweitert",
@@ -731,9 +857,10 @@ async function localMatches(resolved) {
   const resources = resolved
     .filter((r) => MODEL_FOLDERS[r.type])
     .map((r) => ({ key: String(r.versionId), hashes: r.file?.sha256 ? [r.file.sha256, ...r.hashes] : r.hashes, sizeKB: r.file?.sizeKB, fileName: r.file?.name }));
-  if (!resources.length) return {};
+  const mode = opt("localCheck"); // "hash" | "name" | "off"
+  if (!resources.length || mode === "off") return {};
   try {
-    return (await postJson(`${API}/local`, { resources })).matches || {};
+    return (await postJson(`${API}/local`, { resources, hash: mode === "hash" })).matches || {};
   } catch {
     return {};
   }
@@ -1062,7 +1189,10 @@ function parseSize(item) {
 }
 
 /* ------------------------------------------------------- prompt history */
-const HISTORY_MAX = 50;
+/** Entries kept (ComfyUI setting "Prompt history: entries"). */
+function historyMax() {
+  return Math.max(10, Math.min(300, Math.round(Number(opt("historySize")) || 50)));
+}
 /** Prompts sent to nodes, newest first; stored on the ComfyUI server (history.json). */
 const promptHistory = {
   items: null,
@@ -1110,7 +1240,7 @@ const promptHistory = {
         Model: meta.Model,
       },
     };
-    this.items = [entry, ...this.items.filter((x) => x.id !== item.id)].slice(0, HISTORY_MAX);
+    this.items = [entry, ...this.items.filter((x) => x.id !== item.id)].slice(0, historyMax());
     this.save();
   },
   clear() {
@@ -1315,6 +1445,11 @@ const NSFW_LEVELS = [
   { v: 15, label: "X" },
   { v: 31, label: "XXX" },
 ];
+const DISCOVERY_SORTS = ["Most Reactions", "Most Comments", "Most Collected", "Newest"];
+const SORT_LABELS = { "Most Reactions": "sortReactions", "Most Comments": "sortComments", "Most Collected": "sortCollected", Newest: "sortNewest" };
+const PERIODS = ["Day", "Week", "Month", "Year", "AllTime"];
+/** Gallery tile size: minimum column width in the sidebar / in full width. */
+const TILE_SIZES = { s: [80, 150], m: [110, 200], l: [160, 300] };
 const POPULAR_FAMILIES = [
   "Stable Diffusion 1.x",
   "Stable Diffusion XL",
@@ -1364,6 +1499,9 @@ class BrowserPanel {
       lastFavSource: p.lastFavSource || "",
       tags: Array.isArray(p.tags) ? p.tags.filter((x) => x && Number.isInteger(x.id)) : [],
       textFilter: typeof p.textFilter === "string" ? p.textFilter : "",
+      // "-#tag" / "-word": hidden locally (Civitai's API has no exclusion), matched by name
+      excludeTags: Array.isArray(p.excludeTags) ? p.excludeTags.filter((x) => typeof x === "string" && x) : [],
+      excludeWords: Array.isArray(p.excludeWords) ? p.excludeWords.filter((x) => typeof x === "string" && x) : [],
       cloudOpen: !!p.cloudOpen,
       advancedOpen: !!p.advancedOpen,
       user: "", // discovery: currently shown user (not persisted)
@@ -1373,7 +1511,9 @@ class BrowserPanel {
       posTarget: typeof common.posTarget === "string" ? common.posTarget : "",
       negTarget: typeof common.negTarget === "string" ? common.negTarget : "",
       quickAction: typeof common.quickAction === "string" && ACTION_KEYS.some((a) => a.key === common.quickAction) ? common.quickAction : "recreate",
+      tileSize: TILE_SIZES[common.tileSize] ? common.tileSize : "m",
     };
+    this.applyStartOptions();
     shared.domain = this.state.domain;
     this.items = [];
     this.cursor = null;
@@ -1388,9 +1528,53 @@ class BrowserPanel {
     downloads.listeners.add((finished) => this.onDownloadsChanged(finished));
   }
 
+  /** Single-tab layout: the header title opens a menu of the panels. */
+  togglePanelMenu() {
+    if (this.panelMenu) return this.closePanelMenu();
+    const anchor = this.root.querySelector(".cf-switch");
+    const menu = h(
+      "div",
+      { class: "cf-panel-menu" },
+      layout.enabled.map((mode) =>
+        h(
+          "button",
+          { class: "cf-panel-menu-row" + (mode === this.mode ? " active" : ""), onclick: () => (this.closePanelMenu(), mode !== this.mode && showPanel(mode)) },
+          h("i", { class: PANEL_INFO[mode].icon }),
+          " ",
+          t(PANEL_INFO[mode].title)
+        )
+      )
+    );
+    anchor.after(menu);
+    anchor.classList.add("open");
+    this.panelMenu = menu;
+    this._menuAway = (e) => !menu.contains(e.target) && this.closePanelMenu();
+    setTimeout(() => document.addEventListener("pointerdown", this._menuAway, true), 0);
+  }
+  closePanelMenu() {
+    this.panelMenu?.remove();
+    this.panelMenu = null;
+    this.root.querySelector(".cf-switch")?.classList.remove("open");
+    document.removeEventListener("pointerdown", this._menuAway, true);
+  }
+
+  /** ComfyUI settings "Start view": fixed values instead of the last used ones. */
+  applyStartOptions() {
+    if (this.mode === "discovery") {
+      const sort = opt("startSort");
+      if (DISCOVERY_SORTS.includes(sort)) this.state.sort = sort;
+      const period = opt("startPeriod");
+      if (PERIODS.includes(period)) this.state.period = period;
+      const rating = Number(opt("startRating"));
+      if (NSFW_LEVELS.some((l) => l.v === rating)) this.state.browsingLevel = rating;
+    }
+    const blur = opt("startBlur");
+    if (blur === "on" || blur === "off") this.state.blurNsfw = blur === "on";
+  }
+
   persist() {
     this.updateAdvancedBadge?.();
-    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "cloudOpen", "advancedOpen"];
+    const keys = ["source", "metaFilter", "mediaFilter", "browsingLevel", "blurNsfw", "sort", "period", "domain", "bmFilter", "recentUsers", "lastFavSource", "tags", "textFilter", "excludeTags", "excludeWords", "cloudOpen", "advancedOpen"];
     savePrefs(this.mode, Object.fromEntries(keys.map((k) => [k, this.state[k]])));
   }
 
@@ -1420,21 +1604,7 @@ class BrowserPanel {
         { v: "com", label: "civitai.com" },
         { v: "red", label: "civitai.red" },
       ],
-      () => {
-        // the domain is shared by both tabs
-        shared.domain = this.state.domain;
-        for (const p of panels.values()) {
-          if (p !== this) {
-            p.state.domain = this.state.domain;
-            p.domainSelect.value = this.state.domain;
-            p.persist();
-          }
-          if (!p.initialized) continue;
-          if (p.isFav) {
-            if (shared.config?.hasKey) p.loadSources(true);
-          } else p.reload();
-        }
-      }
+      () => applyDomain(this.state.domain)
     );
     this.settingsBox = h(
       "div",
@@ -1485,17 +1655,12 @@ class BrowserPanel {
             { v: "Oldest", label: t("sortOldest") },
             { v: "Most Reactions", label: t("sortReactions") },
           ]
-        : [
-            { v: "Most Reactions", label: t("sortReactions") },
-            { v: "Most Comments", label: t("sortComments") },
-            { v: "Most Collected", label: t("sortCollected") },
-            { v: "Newest", label: t("sortNewest") },
-          ],
+        : DISCOVERY_SORTS.map((v) => ({ v, label: t(SORT_LABELS[v]) })),
       () => this.reload()
     ));
     const periodSel = (this.periodSel = select(
       "period",
-      ["Day", "Week", "Month", "Year", "AllTime"].map((v) => ({ v, label: t(`period_${v}`) })),
+      PERIODS.map((v) => ({ v, label: t(`period_${v}`) })),
       () => this.reload()
     ));
     const blur = h("input", {
@@ -1532,6 +1697,13 @@ class BrowserPanel {
     this.negSelect = targetSelect("negTarget");
 
     this.statusLine = h("div", { class: "cf-status" });
+    this.tileSelect = h(
+      "select",
+      { class: "cf-tile-size", title: t("tileSize"), onchange: (e) => applyTileSize(e.target.value) },
+      ["s", "m", "l"].map((v) => h("option", { value: v }, t(`tileSize_${v}`)))
+    );
+    this.tileSelect.value = this.state.tileSize;
+    this.statusRow = h("div", { class: "cf-status-row" }, this.statusLine, this.tileSelect);
     this.grid = h("div", { class: "cf-grid" });
     this.sentinel = h("div", { class: "cf-sentinel" });
     this.moreBtn = h("button", { class: "cf-btn cf-more", hidden: true, onclick: () => this.loadPage(false) }, t("loadMore"));
@@ -1575,7 +1747,15 @@ class BrowserPanel {
       h(
         "div",
         { class: "cf-header" },
-        h("span", { class: "cf-title" }, h("i", { class: icon }), " ", title),
+        layout.single && layout.enabled.length > 1
+          ? h(
+              "button",
+              { class: "cf-title cf-switch", title: t("switchPanel"), onclick: (e) => (e.stopPropagation(), this.togglePanelMenu()) },
+              h("i", { class: icon }),
+              h("span", { class: "cf-switch-text" }, title),
+              h("i", { class: "pi pi-chevron-down cf-switch-chev" })
+            )
+          : h("span", { class: "cf-title" }, h("i", { class: icon }), " ", title),
         h("button", { class: "cf-icon", title: t("historyTitle"), onclick: () => this.toggleHistory() }, h("i", { class: "pi pi-history" })),
         (this.fullBtn = h("button", { class: "cf-icon", title: t("fullWidth"), onclick: () => this.toggleFull() }, h("i", { class: "pi pi-window-maximize" }))),
         h("button", { class: "cf-icon", title: t("refresh"), onclick: () => this.init(true) }, h("i", { class: "pi pi-refresh" })),
@@ -1615,7 +1795,7 @@ class BrowserPanel {
       )),
       this.notice,
       this.userBar,
-      this.statusLine,
+      this.statusRow,
       this.listView,
       this.detailView
     );
@@ -1630,16 +1810,7 @@ class BrowserPanel {
     this.resetGrid();
     new ResizeObserver(() => this.relayout()).observe(this.grid);
     this.updateAdvancedBadge();
-    this.quickSelect = h("select", {
-      onchange: (e) => {
-        for (const p of new Set([this, ...panels.values()])) {
-          p.state.quickAction = e.target.value;
-          p.quickSelect.value = e.target.value;
-          p.renderGrid(); // re-create the hover buttons
-        }
-        this.saveCommon();
-      },
-    });
+    this.quickSelect = h("select", { onchange: (e) => applyQuickAction(e.target.value) });
     for (const a of ACTION_KEYS) this.quickSelect.append(h("option", { value: a.key }, t(a.label)));
     this.quickSelect.value = this.state.quickAction;
     this.settingsBox.append(
@@ -1648,7 +1819,8 @@ class BrowserPanel {
       h("div", { class: "cf-hint" }, t("targetsHint")),
       h("label", {}, t("quickAction")),
       this.quickSelect,
-      h("div", { class: "cf-hint" }, t("quickActionHint"))
+      h("div", { class: "cf-hint" }, t("quickActionHint")),
+      h("button", { class: "cf-btn cf-more-settings", onclick: () => openComfySettings() }, h("i", { class: "pi pi-sliders-h" }), " ", t("moreSettings"))
     );
     this.buildBaseModelOptions();
     this.fillTargets();
@@ -1732,27 +1904,30 @@ class BrowserPanel {
    * everything else is free text. E.g. `#animal #forest @someone misty morning`.
    */
   parseSearch(raw) {
-    const out = { tags: [], users: [], text: [] };
-    const re = /#"([^"]+)"|#(\S+)|@(\S+)|(\S+)/g;
-    let m;
-    while ((m = re.exec(raw))) {
-      if (m[1] || m[2]) out.tags.push((m[1] || m[2]).replace(/_/g, " ").trim());
-      else if (m[3]) out.users.push(m[3]);
-      else out.text.push(m[4]);
+    const out = { tags: [], users: [], text: [], excludeTags: [], excludeWords: [] };
+    for (const tok of this.tokenizeSearch(raw)) {
+      if (tok.kind === "tag") (tok.exclude ? out.excludeTags : out.tags).push(tok.name);
+      else if (tok.kind === "user") out.users.push(tok.name);
+      else if (tok.exclude) out.excludeWords.push(tok.word);
+      else out.text.push(tok.word);
     }
-    return { tags: out.tags.filter(Boolean), users: out.users, text: out.text.join(" ") };
+    return { tags: out.tags.filter(Boolean), users: out.users, text: out.text.join(" "), excludeTags: out.excludeTags.filter(Boolean), excludeWords: out.excludeWords };
   }
 
-  /** Tokens in input order: {kind: "tag", name, quoted} | {kind: "user", name} | {kind: "text", word}. */
+  /**
+   * Tokens in input order: {kind: "tag", name, quoted, exclude} | {kind: "user", name} |
+   * {kind: "text", word, exclude}. A leading "-" excludes: "-#tag", "-word".
+   */
   tokenizeSearch(raw) {
     const out = [];
-    const re = /#"([^"]+)"|#(\S+)|@(\S+)|(\S+)/g;
+    const re = /(-?)#"([^"]+)"|(-?)#(\S+)|@(\S+)|(\S+)/g;
     let m;
     while ((m = re.exec(raw))) {
-      if (m[1]) out.push({ kind: "tag", name: m[1].trim(), quoted: true });
-      else if (m[2]) out.push({ kind: "tag", name: m[2].replace(/_/g, " ").trim(), quoted: false });
-      else if (m[3]) out.push({ kind: "user", name: m[3] });
-      else out.push({ kind: "text", word: m[4] });
+      if (m[2]) out.push({ kind: "tag", name: m[2].trim(), quoted: true, exclude: !!m[1] });
+      else if (m[4]) out.push({ kind: "tag", name: m[4].replace(/_/g, " ").trim(), quoted: false, exclude: !!m[3] });
+      else if (m[5]) out.push({ kind: "user", name: m[5] });
+      else if (/^-[^-\s]/.test(m[6])) out.push({ kind: "text", word: m[6].slice(1), exclude: true });
+      else out.push({ kind: "text", word: m[6] });
     }
     return out;
   }
@@ -1763,7 +1938,7 @@ class BrowserPanel {
    * a tag already completed from the suggestions ends at the space after it.
    */
   currentHashToken(raw) {
-    const m = /(^|\s)#("[^"]*|[^#@"]*)$/.exec(raw);
+    const m = /(^|\s-?)#("[^"]*|[^#@"]*)$/.exec(raw);
     if (!m) return null;
     let body = m[2];
     if (!body.startsWith('"')) {
@@ -1771,6 +1946,7 @@ class BrowserPanel {
       // "#owl misty" after picking #owl: the tag is done, the rest is text
       if (body.includes(" ") && this.pickedTags?.has(normTag(first))) return null;
       if (body.trim().split(/\s+/).length > 5) return null;
+      if (/\s-/.test(body)) return null; // "#owl -cat": the tag ended, an exclusion follows
     }
     return { start: m.index + m[1].length, query: body.replace(/^"/, "").replace(/_/g, " ") };
   }
@@ -1822,7 +1998,7 @@ class BrowserPanel {
     };
     const tagRow = (tag, fn) => add([h("i", { class: "pi pi-hashtag" }), " ", tag.name, tag.count ? h("span", { class: "cf-count" }, tag.count) : null], fn);
     const parsed = this.parseSearch(raw);
-    const structured = parsed.tags.length || parsed.users.length;
+    const structured = parsed.tags.length || parsed.users.length || parsed.excludeTags.length || parsed.excludeWords.length;
 
     if (mode === "hash") {
       // pick a tag for the "#word" being typed; the rest of the input stays
@@ -1830,7 +2006,13 @@ class BrowserPanel {
     } else {
       // plain words: Enter searches the text; tags are only offered (use "#" or click one)
       if (structured) {
-        const parts = [...parsed.tags.map((x) => `#${x}`), ...parsed.users.map((u) => `@${u}`), parsed.text ? `„${parsed.text}“` : ""].filter(Boolean);
+        const parts = [
+          ...parsed.tags.map((x) => `#${x}`),
+          ...parsed.users.map((u) => `@${u}`),
+          parsed.text ? `„${parsed.text}“` : "",
+          ...parsed.excludeTags.map((x) => `−#${x}`),
+          ...parsed.excludeWords.map((w) => `−${w}`),
+        ].filter(Boolean);
         add([h("i", { class: "pi pi-search" }), " ", `${t("search")}: ${parts.join(" + ")}`], () => this.submitSearch());
       } else if (q) {
         add([h("i", { class: "pi pi-search" }), " ", t("searchText", { q })], () => this.runSearch(() => this.setText(q)));
@@ -1879,7 +2061,7 @@ class BrowserPanel {
     const raw = this.searchInput.value.trim();
     if (!raw) return;
     const parsed = this.parseSearch(raw);
-    if (!parsed.tags.length && !parsed.users.length) {
+    if (!parsed.tags.length && !parsed.users.length && !parsed.excludeTags.length && !parsed.excludeWords.length) {
       // plain input is always a text search; tags need "#" (or a click on a suggested tag)
       return this.runSearch(() => this.setText(raw));
     }
@@ -1888,17 +2070,19 @@ class BrowserPanel {
     const found = [];
     const missing = [];
     const words = [];
+    const exTags = [];
+    const exWords = [];
     // "#star trek": the longest run of following words that is a tag wins ("star trek" before "star")
     const tokens = this.tokenizeSearch(raw);
     for (let i = 0; i < tokens.length; i++) {
       const tok = tokens[i];
-      if (tok.kind === "text") words.push(tok.word);
+      if (tok.kind === "text") (tok.exclude ? exWords : words).push(tok.word);
       if (tok.kind !== "tag") continue;
       let tag = null;
       // a tag picked from the suggestions or written in quotes is taken as is
       if (!tok.quoted && !this.pickedTags?.has(normTag(tok.name))) {
         let n = 0;
-        while (n < 4 && tokens[i + 1 + n]?.kind === "text") n++;
+        while (n < 4 && tokens[i + 1 + n]?.kind === "text" && !tokens[i + 1 + n].exclude) n++;
         for (let k = n; k > 0 && !tag; k--) {
           const name = [tok.name, ...tokens.slice(i + 1, i + 1 + k).map((x) => x.word)].join(" ");
           tag = await this.resolveTagByName(name);
@@ -1906,7 +2090,9 @@ class BrowserPanel {
         }
       }
       tag ||= await this.resolveTagByName(tok.name);
-      if (tag) found.push(tag);
+      // exclusions match tag names locally, so an unknown tag is still excluded by its name
+      if (tok.exclude) exTags.push(tag ? tag.name : tok.name);
+      else if (tag) found.push(tag);
       else missing.push(tok.name);
     }
     this.pickedTags = new Map(); // picks belong to this input only
@@ -1915,6 +2101,9 @@ class BrowserPanel {
     const known = new Set(this.state.tags.map((x) => x.id));
     this.state.tags = [...this.state.tags, ...found.filter((x) => !known.has(x.id)).map((x) => ({ id: x.id, name: x.name }))].slice(-10);
     if (text) this.state.textFilter = text;
+    const addUnique = (list, extra) => [...list, ...extra.filter((x) => !list.some((y) => normTag(y) === normTag(x)))].slice(-20);
+    this.state.excludeTags = addUnique(this.state.excludeTags, exTags);
+    this.state.excludeWords = addUnique(this.state.excludeWords, exWords);
     const user = parsed.users[parsed.users.length - 1];
     if (user) {
       this.state.recentUsers = [user, ...this.state.recentUsers.filter((u) => u !== user)].slice(0, 8);
@@ -1948,9 +2137,22 @@ class BrowserPanel {
     this.searchChanged(wasSemantic || this.useSemantic());
   }
   clearSearch() {
+    const tagsChanged = this.state.tags.length || this.useSemantic();
     this.state.tags = [];
     this.state.textFilter = "";
-    this.searchChanged(true);
+    this.state.excludeTags = [];
+    this.state.excludeWords = [];
+    this.searchChanged(tagsChanged);
+  }
+  /** Hide everything with this tag (local filter). */
+  excludeTag(name) {
+    if (this.state.excludeTags.some((x) => normTag(x) === normTag(name))) return;
+    this.state.excludeTags = [...this.state.excludeTags, name].slice(-20);
+    this.searchChanged(false);
+  }
+  removeExclusion(kind, value) {
+    this.state[kind] = this.state[kind].filter((x) => x !== value);
+    this.searchChanged(false);
   }
   searchChanged(tagsChanged) {
     this.persist();
@@ -1974,6 +2176,14 @@ class BrowserPanel {
           h("button", { class: "cf-chip-x", title: t("remove"), onclick: () => this.setText("") }, "×")
         )
       );
+    for (const name of this.state.excludeTags)
+      chips.push(
+        h("span", { class: "cf-chip exclude", title: t("excludedHint") }, `−#${name}`, h("button", { class: "cf-chip-x", title: t("remove"), onclick: () => this.removeExclusion("excludeTags", name) }, "×"))
+      );
+    for (const word of this.state.excludeWords)
+      chips.push(
+        h("span", { class: "cf-chip exclude", title: t("excludedHint") }, `−${word}`, h("button", { class: "cf-chip-x", title: t("remove"), onclick: () => this.removeExclusion("excludeWords", word) }, "×"))
+      );
     if (chips.length > 1) chips.push(h("button", { class: "cf-chip-clear", onclick: () => this.clearSearch() }, t("clearAll")));
     this.chips.replaceChildren(...chips);
     this.chips.hidden = !chips.length;
@@ -1991,7 +2201,17 @@ class BrowserPanel {
     if (!this.state.cloudOpen) return;
     const active = new Set(this.state.tags.map((x) => x.id));
     const tagEl = (tag, size) =>
-      h("span", { class: "cf-cloud-tag", style: size ? { fontSize: `${size}px` } : null, title: tag.count ? `${tag.count}×` : t("tagHint"), onclick: () => this.addTag(tag) }, tag.name);
+      h(
+        "span",
+        {
+          class: "cf-cloud-tag",
+          style: size ? { fontSize: `${size}px` } : null,
+          title: (tag.count ? `${tag.count}× · ` : "") + t("tagHint"),
+          onclick: () => this.addTag(tag),
+          oncontextmenu: (e) => (e.preventDefault(), this.excludeTag(tag.name)),
+        },
+        tag.name
+      );
     // tags in the loaded (visible) results, sized by frequency
     const counts = new Map();
     for (const it of this.items) {
@@ -2118,15 +2338,7 @@ class BrowserPanel {
   }
 
   async saveKey(key) {
-    try {
-      const cfg = await postJson(`${API}/config`, { apiKey: key });
-      this.keyInput.value = "";
-      toast("success", key ? t("keySaved") : t("keyRemoved"));
-      shared.setConfig(cfg); // notifies all panels (incl. this one)
-      if (cfg.hasKey) this.settingsBox.hidden = true;
-    } catch (e) {
-      toast("error", t("apiKey"), String(e.message || e));
-    }
+    if (await saveApiKey(key)) this.keyInput.value = "";
   }
 
   /** Something shared changed (key saved, collections edited in another panel). */
@@ -2292,7 +2504,7 @@ class BrowserPanel {
   /** A username was clicked: the artist page (Artists tab; there it opens in place). Without a key the works are shown here. */
   openArtist(username) {
     if (this.isUsers) return this.showUser(username);
-    if (!shared.config?.hasKey) return this.showUser(username);
+    if (!shared.config?.hasKey || !layout.enabled.includes("users")) return this.showUser(username);
     this.state.recentUsers = [username, ...this.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
     this.persist();
     openInUsersTab(username);
@@ -2302,14 +2514,13 @@ class BrowserPanel {
   showModel(resource) {
     if (this.isFav || this.isUsers) {
       // the feed lives in the Discovery tab (the artists tab has no model view)
-      let disc = panels.get("discovery");
-      if (!disc) panels.set("discovery", (disc = new BrowserPanel("discovery")));
-      if (disc.initialized) disc.pushView();
+      const disc = getPanel("discovery");
+      const wasInit = disc.initialized;
+      if (wasInit) disc.pushView();
       disc.state.model = { id: resource.versionId, name: `${resource.modelName}${resource.versionName ? ` – ${resource.versionName}` : ""}` };
       disc.state.user = "";
-      const store = app.extensionManager?.sidebarTab;
-      if (store && store.activeSidebarTabId !== "civitai-discovery") store.toggleSidebarTab?.("civitai-discovery");
-      if (disc.initialized) disc.reload(true);
+      showPanel("discovery"); // a panel shown for the first time loads the model view on init
+      if (wasInit) disc.reload(true);
       return;
     }
     this.pushView();
@@ -2433,7 +2644,7 @@ class BrowserPanel {
     );
     this.peopleView.hidden = !people;
     this.profileBox.hidden = view !== "user";
-    for (const el of [this.controlsBox, this.statusLine, this.listView]) el.hidden = people;
+    for (const el of [this.controlsBox, this.statusRow, this.listView]) el.hidden = people;
     if (people) {
       this.detailView.hidden = true;
       this.userBar.hidden = true;
@@ -2739,6 +2950,14 @@ class BrowserPanel {
   matches(item) {
     const { metaFilter, mediaFilter } = this.state;
     if (this.removedIds.has(item.id)) return false;
+    if (this.state.excludeTags.length && item.tags?.length) {
+      const names = new Set(item.tags.map((x) => normTag(x.name)));
+      if (this.state.excludeTags.some((x) => names.has(normTag(x)))) return false;
+    }
+    if (this.state.excludeWords.length && item.meta?.prompt) {
+      const prompt = String(item.meta.prompt).toLowerCase();
+      if (this.state.excludeWords.some((w) => prompt.includes(w.toLowerCase()))) return false;
+    }
     if (this.state.textFilter && !this.useSemantic()) {
       const prompt = String(item.meta?.prompt || "").toLowerCase();
       if (!this.state.textFilter.toLowerCase().split(/\s+/).every((w) => prompt.includes(w))) return false;
@@ -2765,7 +2984,7 @@ class BrowserPanel {
     this.moreBtn.hidden = !this.hasMore || this.loading;
     this.emptyActions.hidden = true;
     if (!this.loading) {
-      const filtered = this.state.tags.length || this.state.textFilter || this.state.bmFilter !== "all" || this.state.mediaFilter !== "all" || this.state.metaFilter !== "all";
+      const filtered = this.state.tags.length || this.state.textFilter || this.state.excludeTags.length || this.state.excludeWords.length || this.state.bmFilter !== "all" || this.state.mediaFilter !== "all" || this.state.metaFilter !== "all";
       // Civitai: "Most collected/commented" + a period = collected/commented *within* that period
       const metricPeriod =
         !this.isFav && !this.useSemantic() && !this.state.model && ["Most Collected", "Most Comments"].includes(this.state.sort) && this.state.period !== "AllTime";
@@ -2834,19 +3053,33 @@ class BrowserPanel {
     const ratio = String(ar);
     let media;
     if (item.type === "video") {
-      media = h("video", { src: item.thumbUrl, poster: item.posterUrl, muted: true, loop: true, playsInline: true, preload: "none" });
-      media.muted = true;
-      pauseWhenHidden(media, false);
+      const vmode = opt("gridVideos"); // "hover" | "visible" | "off"
+      if (vmode === "off") media = h("img", { src: item.posterUrl || item.thumbUrl, loading: "lazy", alt: "" });
+      else {
+        media = h("video", { src: item.thumbUrl, poster: item.posterUrl, muted: true, loop: true, playsInline: true, preload: "none" });
+        media.muted = true;
+        pauseWhenHidden(media, vmode === "visible"); // "visible": plays while on screen
+      }
     } else {
       media = h("img", { src: item.thumbUrl, loading: "lazy", alt: "" });
     }
+    // ( icon | ⌄ ): the quick-button action, and a menu with all actions
     const qa = this.actionsFor(item).find((a) => a.key === this.state.quickAction);
-    const quick =
-      qa && qa.enabled
+    const quickChev = h("button", { class: "cf-quick-chev", title: t("moreActions") }, h("i", { class: "pi pi-chevron-down" }));
+    quickChev.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const tile = quickChev.closest(".cf-tile");
+      tile?.classList.add("cf-menu-open");
+      this.openActionMenu(item, quickChev, qa?.key, () => tile?.classList.remove("cf-menu-open"));
+    });
+    const quick = h(
+      "div",
+      { class: "cf-quick" + (qa?.enabled ? "" : " only-chev") },
+      qa?.enabled
         ? h(
             "button",
             {
-              class: "cf-quick",
+              class: "cf-quick-main",
               title: t(qa.label),
               onclick: (e) => {
                 e.stopPropagation();
@@ -2856,7 +3089,9 @@ class BrowserPanel {
             },
             iconEl(qa.icon)
           )
-        : null;
+        : null,
+      quickChev
+    );
     const el = h(
       "div",
       {
@@ -2887,11 +3122,11 @@ class BrowserPanel {
           this.showContextMenu(item, e.clientX, e.clientY);
         },
         onmouseenter: (e) => {
-          if (item.type === "video") media.play?.().catch(() => {});
+          if (item.type === "video" && !media._cfResume) media.play?.().catch(() => {});
           scheduleTooltip(item, e.currentTarget);
         },
         onmouseleave: () => {
-          if (item.type === "video") media.pause?.();
+          if (item.type === "video" && !media._cfResume) media.pause?.();
           hideTooltip();
         },
       },
@@ -2912,7 +3147,7 @@ class BrowserPanel {
   columnCount() {
     const w = this.grid.clientWidth || 0;
     if (!w) return this.cols?.length || 2;
-    const min = this.full ? 200 : 110;
+    const min = (TILE_SIZES[this.state.tileSize] || TILE_SIZES.m)[this.full ? 1 : 0];
     const gap = 6;
     return Math.max(1, Math.floor((w + gap) / (min + gap)));
   }
@@ -2968,9 +3203,9 @@ class BrowserPanel {
     const meta = item.meta || null;
     const media =
       item.type === "video"
-        ? h("video", { src: item.previewUrl, poster: item.posterUrl, controls: true, autoplay: true, muted: true, loop: true, playsInline: true })
+        ? h("video", { src: item.previewUrl, poster: item.posterUrl, controls: true, autoplay: !!opt("detailAutoplay"), muted: true, loop: true, playsInline: true })
         : h("img", { src: item.previewUrl, alt: "" });
-    if (item.type === "video") pauseWhenHidden(media, true);
+    if (item.type === "video") pauseWhenHidden(media, !!opt("detailAutoplay"));
 
     const textBlock = (label, text, kind) =>
       h(
@@ -2996,27 +3231,24 @@ class BrowserPanel {
             "div",
             { class: "cf-cloud-tags" },
             item.tags.map((tag) =>
-              h("span", { class: "cf-cloud-tag" + (this.state.tags.some((x) => x.id === tag.id) ? " active" : ""), title: t("tagHint"), onclick: () => this.addTag(tag) }, `#${tag.name}`)
+              h("span", { class: "cf-cloud-tag" + (this.state.tags.some((x) => x.id === tag.id) ? " active" : ""), title: t("tagHint"), onclick: () => this.addTag(tag), oncontextmenu: (e) => (e.preventDefault(), this.excludeTag(tag.name)) }, `#${tag.name}`)
             )
           )
         )
       : null;
+    // a pill next to the reactions (togglePicker updates its label)
     const saveBtn = h(
       "button",
-      { class: "cf-btn", onclick: () => this.togglePicker(item, pickerBox, saveBtn) },
-      h("i", { class: "pi pi-bookmark" }),
-      " ",
-      t("saveToCollection")
+      { class: "cf-react cf-save-pill", title: t("saveToCollection"), onclick: () => this.togglePicker(item, pickerBox, saveBtn) },
+      h("i", { class: "pi pi-bookmark e" }),
+      h("span", { class: "n" }, t("saveToCollection"))
     );
 
-    const imgBtn =
-      item.type === "image"
-        ? h("button", { class: "cf-btn", onclick: () => this.imageToNode(item) }, h("i", { class: "pi pi-image" }), " ", t("ctxImage"))
-        : null;
     const reactionBar = h("div", { class: "cf-reactions" });
+    reactionBar._extra = saveBtn;
     this.renderReactions(item, reactionBar, null);
     this.loadMyReactions(item, reactionBar);
-    const body = [reactionBar, h("div", { class: "cf-actions" }, saveBtn, imgBtn), pickerBox];
+    const body = [reactionBar, pickerBox, h("div", { class: "cf-actions cf-actions-end" }, this.actionSplitButton(item))];
     // Checkpoint / LoRAs: shown from the metadata at once, resolved to Civitai models async
     const metaCkpt = meta?.Model || meta?.model || null;
     const ckptCell = h("td", {}, metaCkpt || "…");
@@ -3028,15 +3260,6 @@ class BrowserPanel {
       body.push(h("div", { class: "cf-message" }, t("noMeta")));
       body.push(tagsBlock, resBlock);
     } else {
-      const actions = h("div", { class: "cf-actions" });
-      if (meta.prompt || meta.negativePrompt) actions.append(h("button", { class: "cf-btn primary", onclick: () => this.insertBoth(item) }, t("applyBoth")));
-      if (meta.seed != null || meta.steps != null || meta.cfgScale != null)
-        actions.append(h("button", { class: "cf-btn", onclick: () => this.applySampler(meta) }, t("applySampler")));
-      const wf = extractWorkflow(meta);
-      if (wf) actions.append(h("button", { class: "cf-btn", onclick: () => this.loadWorkflow(wf) }, h("i", { class: "pi pi-sitemap" }), " ", t("loadWorkflow")));
-      actions.append(h("button", { class: "cf-btn", onclick: () => copyText(formatA1111(meta)) }, t("copyAll")));
-      body.push(actions);
-
       if (meta.prompt) body.push(textBlock(t("prompt"), meta.prompt, "positive"));
       if (meta.negativePrompt) body.push(textBlock(t("negative"), meta.negativePrompt, "negative"));
       body.push(tagsBlock);
@@ -3265,13 +3488,9 @@ class BrowserPanel {
 
     const section = (label, list) => (list.length ? [h("div", { class: "cf-res-label" }, label), h("ul", { class: "cf-res" }, list)] : []);
     const content = [...section(t("checkpoint"), groups.ckpt), ...section(t("loras"), groups.lora), ...section(t("otherResources"), groups.other)];
-    const recreateBtn = item.meta
-      ? h("button", { class: "cf-btn", onclick: () => this.openRecreate(item) }, h("i", { class: "pi pi-sitemap" }), " ", t("recreate"))
-      : null;
     block.replaceChildren(
       h("div", { class: "cf-block-head" }, h("span", {}, t("resources")), resolved ? null : h("span", { class: "cf-hint" }, t("loading"))),
-      ...content,
-      content.length && recreateBtn ? h("div", { class: "cf-actions" }, recreateBtn) : null
+      ...content
     );
     block.hidden = !content.length && !!resolved;
   }
@@ -3509,7 +3728,7 @@ class BrowserPanel {
           setNum("noise_seed", meta.seed);
           // keep the seed for the next run instead of randomizing it
           const ctl = ws.control_after_generate;
-          if (meta.seed != null && ctl && comboValues(ctl).includes("fixed")) setWidget(sampler, ctl, "fixed");
+          if (meta.seed != null && ctl && opt("fixedSeed") && comboValues(ctl).includes("fixed")) setWidget(sampler, ctl, "fixed");
           setNum("steps", meta.steps);
           setNum("cfg", meta.cfgScale);
           if (sName && ws.sampler_name && comboValues(ws.sampler_name).includes(sName)) setWidget(sampler, ws.sampler_name, sName);
@@ -3672,11 +3891,14 @@ class BrowserPanel {
         h("span", { class: "n" }, formatCount(stats[r] || 0))
       )
     );
-    btns.push(
-      h("a", { class: "cf-react comments", href: item.pageUrl, target: "_blank", rel: "noopener", title: t("comments") }, h("span", { class: "e" }, "💬"), h("span", { class: "n" }, formatCount(stats.comments || 0)))
-    );
+    if (bar._extra) btns.push(bar._extra);
+    if (!bar._noComments) btns.push(this.commentsPill(item));
     bar.replaceChildren(...btns);
     bar.dataset.mine = JSON.stringify([...set]);
+  }
+  commentsPill(item) {
+    const n = formatCount(item.stats?.comments || 0);
+    return h("a", { class: "cf-react comments", href: item.pageUrl, target: "_blank", rel: "noopener", title: t("comments") }, h("span", { class: "e" }, "💬"), h("span", { class: "n" }, n));
   }
   async loadMyReactions(item, bar) {
     if (!shared.config?.hasKey) return;
@@ -3766,7 +3988,7 @@ class BrowserPanel {
       return;
     }
     const updateBtn = () => {
-      btn.classList.toggle("primary", inIds.size > 0);
+      btn.classList.toggle(btn.classList.contains("cf-react") ? "active" : "primary", inIds.size > 0);
       btn.lastChild.textContent = inIds.size ? t("inCollections", { n: inIds.size }) : t("saveToCollection");
     };
     const apply = async (collection, add, checkbox) => {
@@ -4094,14 +4316,14 @@ class BrowserPanel {
     );
     relayout();
   }
-  showContextMenu(item, x, y) {
-    closeContextMenu();
+  /** Workflow actions + load workflow + copy entries (context menu and the detail split button). */
+  workflowEntries(item, defaultKey) {
     const meta = item.meta || {};
     const entries = [];
     const add = (icon, label, fn, enabled = true, bold = false) => entries.push({ icon, label, fn, enabled, bold });
     const sep = () => entries.length && entries[entries.length - 1] !== "-" && entries.push("-");
     for (const a of this.actionsFor(item)) {
-      add(a.icon, t(a.label), a.run, a.enabled, a.key === this.state.quickAction);
+      add(a.icon, t(a.label), a.run, a.enabled, a.key === defaultKey);
       if (a.key === "recreate" || a.key === "negSeed" || a.key === "sampler") sep();
     }
     const wf = extractWorkflow(meta);
@@ -4110,12 +4332,50 @@ class BrowserPanel {
     add("pi-copy", t("ctxCopyPrompt"), () => copyText(meta.prompt), !!meta.prompt);
     add("pi-copy", t("ctxCopySeed"), () => copyText(String(meta.seed)), meta.seed != null);
     add("pi-clone", t("copyAll"), () => copyText(formatA1111(meta)), !!item.meta);
+    return entries;
+  }
+  /**
+   * Detail view: ( icon  default action | ⌄ ). The left part runs the quick-button action
+   * (or the first available one), the chevron opens all actions.
+   */
+  actionSplitButton(item) {
+    const actions = this.actionsFor(item);
+    const def = actions.find((a) => a.key === this.state.quickAction && a.enabled) || actions.find((a) => a.enabled);
+    const chev = h("button", { class: "cf-btn primary cf-split-chev", title: t("moreActions") }, h("i", { class: "pi pi-chevron-down" }));
+    chev.addEventListener("click", () => this.openActionMenu(item, chev, def?.key));
+    if (!def) return h("div", { class: "cf-split" }, h("button", { class: "cf-btn primary", disabled: true }, t("noActions")), chev);
+    return h(
+      "div",
+      { class: "cf-split" },
+      h("button", { class: "cf-btn primary cf-split-main", title: t(def.label), onclick: () => def.run() }, iconEl(def.icon), h("span", {}, t(def.label))),
+      chev
+    );
+  }
+  /** The actions menu, right-aligned under (or above) its chevron button; a second click closes it. */
+  openActionMenu(item, chev, defaultKey, onClose) {
+    if (menuClosedBy === chev) return (menuClosedBy = null); // this click closed the open menu
+    hideTooltip();
+    const r = chev.getBoundingClientRect();
+    const menu = this.renderMenu(this.workflowEntries(item, defaultKey), r.right, r.bottom + 2, chev);
+    const m = menu.getBoundingClientRect();
+    menu.style.left = `${Math.max(4, Math.min(r.right - m.width, window.innerWidth - m.width - 4))}px`;
+    menu.style.top = `${r.bottom + 2 + m.height > window.innerHeight - 4 ? Math.max(4, r.top - m.height - 2) : r.bottom + 2}px`;
+    menu._onClose = onClose;
+  }
+  showContextMenu(item, x, y) {
+    const entries = this.workflowEntries(item, this.state.quickAction);
+    const sep = () => entries.length && entries[entries.length - 1] !== "-" && entries.push("-");
+    const add = (icon, label, fn, enabled = true) => entries.push({ icon, label, fn, enabled });
     sep();
     add("pi-window-maximize", t("ctxDetails"), () => this.openDetail(item));
     entries.push({ icon: "pi-bookmark", label: t("saveToCollection"), enabled: true, submenu: (anchor) => this.collectionSubmenu(item, anchor) });
     if (item.username) add("pi-user", t("ctxUser", { user: item.username }), () => this.openArtist(item.username));
     add("pi-external-link", t("openCivitai"), () => window.open(item.pageUrl, "_blank", "noopener"));
-
+    this.renderMenu(entries, x, y);
+  }
+  /** Renders a menu of {icon, label, fn, enabled, bold, submenu} / "-" at x, y (kept inside the window). */
+  renderMenu(entries, x, y, owner = null) {
+    closeContextMenu();
     const menu = h(
       "div",
       { class: "cf-ctxmenu", oncontextmenu: (e) => e.preventDefault() },
@@ -4181,7 +4441,9 @@ class BrowserPanel {
     const r = menu.getBoundingClientRect();
     menu.style.left = `${Math.max(4, Math.min(x, window.innerWidth - r.width - 4))}px`;
     menu.style.top = `${Math.max(4, Math.min(y, window.innerHeight - r.height - 4))}px`;
+    menu._owner = owner;
     activeMenu = menu;
+    return menu;
   }
 
   /* ---------- actions ---------- */
@@ -4441,16 +4703,28 @@ document.addEventListener("scroll", hideTooltip, true);
 
 /* -------------------------------------------------------- context menu */
 let activeMenu = null;
+let menuClosedBy = null; // the button whose own menu a mousedown just closed (so its click doesn't reopen it)
 let activeRecreate = null;
 function closeRecreate() {
   activeRecreate?.remove();
   activeRecreate = null;
 }
 function closeContextMenu() {
-  activeMenu?.remove();
+  const menu = activeMenu;
   activeMenu = null;
+  menu?.remove();
+  menu?._onClose?.();
 }
-document.addEventListener("mousedown", (e) => activeMenu && !activeMenu.contains(e.target) && closeContextMenu(), true);
+document.addEventListener(
+  "mousedown",
+  (e) => {
+    menuClosedBy = null;
+    if (!activeMenu || activeMenu.contains(e.target)) return;
+    if (activeMenu._owner?.contains(e.target)) menuClosedBy = activeMenu._owner;
+    closeContextMenu();
+  },
+  true
+);
 document.addEventListener(
   "keydown",
   (e) => {
@@ -4482,7 +4756,13 @@ function pauseWhenHidden(video, resume) {
   videoObserver.observe(video);
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") document.querySelectorAll(".civitai-favorites video").forEach((v) => v.pause());
+  const videos = document.querySelectorAll(".civitai-favorites video");
+  if (document.visibilityState !== "visible") return videos.forEach((v) => v.pause());
+  // back: resume the videos that play while visible ("play while visible" / detail view)
+  for (const v of videos) {
+    const r = v.getBoundingClientRect();
+    if (v._cfResume && r.width && r.bottom > 0 && r.top < window.innerHeight) v.play().catch(() => {});
+  }
 });
 
 /* ---------- drag & drop onto the canvas ---------- */
@@ -4551,16 +4831,407 @@ document.addEventListener("scroll", closeContextMenu, true);
 /* ------------------------------------------------------------- register */
 const panels = new Map();
 
-/** Show a user's page in the Civitai Users tab (from Discovery / Favorites). */
+/** ComfyUI's settings dialog, opened on the "Civitai Discovery" category. */
+async function openComfySettings() {
+  try {
+    await app.extensionManager.command.execute("Comfy.ShowSettingsDialog");
+  } catch (e) {
+    return toast("error", t("moreSettings"), String(e.message || e));
+  }
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 100));
+    const entry = [...document.querySelectorAll("[role=dialog] *")].find((e) => e.children.length === 0 && e.textContent.trim() === "Civitai Discovery");
+    if (entry) return entry.click();
+  }
+}
+
+/** Saves (or with "" removes) the API key on the server; all panels update. */
+async function saveApiKey(key) {
+  try {
+    const cfg = await postJson(`${API}/config`, { apiKey: key });
+    toast("success", key ? t("keySaved") : t("keyRemoved"));
+    shared.setConfig(cfg); // notifies all panels
+    if (cfg.hasKey) for (const p of panels.values()) if (p.settingsBox) p.settingsBox.hidden = true;
+    keySettingStatus?.();
+    return true;
+  } catch (e) {
+    toast("error", t("apiKey"), String(e.message || e));
+    return false;
+  }
+}
+
+/** The Civitai domain is shared by all tabs (panel gear menu and ComfyUI settings). */
+function applyDomain(value) {
+  if (!["auto", "com", "red"].includes(value)) return;
+  const changed = shared.domain !== value;
+  shared.domain = value;
+  for (const mode of ["discovery", "favorites", "users"]) {
+    const p = panels.get(mode);
+    if (p) {
+      p.state.domain = value;
+      if (p.domainSelect) p.domainSelect.value = value;
+      p.persist();
+    } else savePrefs(mode, { ...loadPrefs(mode), domain: value });
+  }
+  syncSetting(SETTING_IDS.domain, value);
+  if (!changed) return;
+  for (const p of panels.values()) {
+    if (!p.initialized) continue;
+    if (p.isFav) {
+      if (shared.config?.hasKey) p.loadSources(true);
+    } else p.reload();
+  }
+}
+
+/** Gallery tile size (dropdown above the thumbnails; shared by all panels). */
+function applyTileSize(value) {
+  if (!TILE_SIZES[value]) return;
+  for (const p of panels.values()) {
+    p.state.tileSize = value;
+    if (p.tileSelect) p.tileSelect.value = value;
+    if (p.initialized) p.relayout();
+  }
+  savePrefs("common", { ...loadPrefs("common"), tileSize: value });
+}
+
+/** What the quick button on the tiles does (shared by all tabs). */
+function applyQuickAction(value) {
+  if (!ACTION_KEYS.some((a) => a.key === value)) return;
+  for (const p of panels.values()) {
+    p.state.quickAction = value;
+    if (p.quickSelect) p.quickSelect.value = value;
+    if (p.initialized) p.renderGrid(); // re-create the hover buttons
+  }
+  savePrefs("common", { ...loadPrefs("common"), quickAction: value });
+  syncSetting(SETTING_IDS.quickAction, value);
+}
+
+/* ComfyUI settings dialog (Settings -> Civitai Discovery). The plugin's own prefs stay the
+   source of truth; the dialog mirrors them and writes changes back through the functions above. */
+const SETTING_IDS = { apiKey: "CivitaiDiscovery.ApiKey", domain: "CivitaiDiscovery.Domain", quickAction: "CivitaiDiscovery.QuickAction" };
+/** Settings that live only in ComfyUI's settings dialog (id "CivitaiDiscovery.<Name>"). */
+const OPT_DEFAULTS = {
+  layout: "tabs",
+  showArtists: true,
+  showFavorites: true,
+  gridVideos: "hover",
+  detailAutoplay: true,
+  startSort: "last",
+  startPeriod: "last",
+  startRating: "last",
+  startBlur: "last",
+  localCheck: "hash",
+  historySize: 50,
+  fixedSeed: true,
+};
+function optId(name) {
+  return `CivitaiDiscovery.${name[0].toUpperCase()}${name.slice(1)}`;
+}
+function opt(name) {
+  try {
+    const v = app.extensionManager?.setting?.get?.(optId(name));
+    return v ?? OPT_DEFAULTS[name];
+  } catch {
+    return OPT_DEFAULTS[name];
+  }
+}
+let settingsReady = false; // ComfyUI calls onChange while loading its settings: ignore until our prefs are in
+let settingSyncing = false;
+let keySettingStatus = null;
+function settingStore() {
+  return app.extensionManager?.setting;
+}
+function syncSetting(id, value) {
+  const store = settingStore();
+  if (!settingsReady || !store?.set) return;
+  try {
+    if (store.get?.(id) === value) return;
+    settingSyncing = true;
+    Promise.resolve(store.set(id, value))
+      .catch(() => {})
+      .finally(() => (settingSyncing = false));
+  } catch {
+    settingSyncing = false;
+  }
+}
+function fromSetting(fn) {
+  return (value) => {
+    if (!settingsReady || settingSyncing || value == null) return;
+    fn(value);
+  };
+}
+/** The key itself never goes into ComfyUI's settings file: the field posts it to the server. */
+function apiKeySettingElement() {
+  const input = h("input", { type: "password", class: "cf-setting-key", placeholder: "••••••••••••", autocomplete: "off" });
+  const status = h("span", { class: "cf-setting-status" });
+  const paint = () => {
+    const has = shared.config?.hasKey;
+    status.textContent = shared.config ? (has ? `✓ ${t("keyStored")}` : t("noKeyShort")) : "";
+    status.classList.toggle("ok", !!has);
+  };
+  keySettingStatus = paint;
+  if (!shared.config) shared.loadConfig().then(paint, () => {});
+  paint();
+  const save = async (key) => {
+    if (await saveApiKey(key)) input.value = "";
+    paint();
+  };
+  input.addEventListener("keydown", (e) => e.key === "Enter" && (e.preventDefault(), save(input.value.trim())));
+  return h(
+    "div",
+    { class: "cf-setting-keyrow" },
+    input,
+    h("button", { class: "cf-setting-btn primary", type: "button", onclick: () => save(input.value.trim()) }, t("save")),
+    h("button", { class: "cf-setting-btn", type: "button", onclick: () => save("") }, t("remove")),
+    status
+  );
+}
+function comfySettings() {
+  const cat = (section, name) => ["Civitai Discovery", section, name];
+  return [
+    {
+      id: SETTING_IDS.apiKey,
+      category: cat(t("settingsCivitai"), t("apiKey")),
+      name: t("apiKey"),
+      tooltip: t("apiKeyHint"),
+      type: () => apiKeySettingElement(),
+      defaultValue: "",
+    },
+    {
+      id: SETTING_IDS.domain,
+      category: cat(t("settingsCivitai"), t("domain")),
+      name: t("domain"),
+      tooltip: t("domainHint"),
+      type: "combo",
+      options: [
+        { text: t("domainAuto"), value: "auto" },
+        { text: "civitai.com", value: "com" },
+        { text: "civitai.red", value: "red" },
+      ],
+      defaultValue: "auto",
+      onChange: fromSetting(applyDomain),
+    },
+    {
+      id: SETTING_IDS.quickAction,
+      category: cat(t("settingsPanels"), t("quickAction")),
+      name: t("quickAction"),
+      tooltip: t("quickActionHint"),
+      type: "combo",
+      options: ACTION_KEYS.map((a) => ({ text: t(a.label), value: a.key })),
+      defaultValue: "recreate",
+      onChange: fromSetting(applyQuickAction),
+    },
+    ...moreSettings(),
+  ];
+}
+function actionButtonElement(label, run) {
+  const status = h("span", { class: "cf-setting-status" });
+  const btn = h(
+    "button",
+    {
+      class: "cf-setting-btn",
+      type: "button",
+      onclick: async () => {
+        btn.disabled = true;
+        try {
+          status.textContent = (await run()) || "";
+        } catch (e) {
+          status.textContent = String(e.message || e);
+        } finally {
+          btn.disabled = false;
+        }
+      },
+    },
+    label
+  );
+  return h("div", { class: "cf-setting-keyrow" }, btn, status);
+}
+function onlyOnReload() {
+  return fromSetting(() => toast("info", "Civitai Discovery", t("reloadToApply")));
+}
+function moreSettings() {
+  const cat = (section, name) => ["Civitai Discovery", section, name];
+  const combo = (name, section, options, extra = {}) => ({
+    id: optId(name),
+    category: cat(t(section), t(`set_${name}`)),
+    name: t(`set_${name}`),
+    tooltip: t(`set_${name}_hint`),
+    type: "combo",
+    options,
+    defaultValue: OPT_DEFAULTS[name],
+    ...extra,
+  });
+  const bool = (name, section, extra = {}) => ({
+    id: optId(name),
+    category: cat(t(section), t(`set_${name}`)),
+    name: t(`set_${name}`),
+    tooltip: t(`set_${name}_hint`),
+    type: "boolean",
+    defaultValue: OPT_DEFAULTS[name],
+    ...extra,
+  });
+  const last = { text: t("startLast"), value: "last" };
+  const rerenderGrids = fromSetting(() => {
+    for (const p of panels.values()) if (p.initialized) p.renderGrid();
+  });
+  return [
+    combo("layout", "settingsPanels", [
+      { text: t("layoutTabs"), value: "tabs" },
+      { text: t("layoutSingle"), value: "single" },
+    ], { onChange: onlyOnReload() }),
+    bool("showArtists", "settingsPanels", { onChange: onlyOnReload() }),
+    bool("showFavorites", "settingsPanels", { onChange: onlyOnReload() }),
+    combo("gridVideos", "settingsGallery", [
+      { text: t("videosHover"), value: "hover" },
+      { text: t("videosVisible"), value: "visible" },
+      { text: t("videosOff"), value: "off" },
+    ], { onChange: rerenderGrids }),
+    bool("detailAutoplay", "settingsGallery"),
+    combo("startSort", "settingsStart", [last, ...DISCOVERY_SORTS.map((v) => ({ text: t(SORT_LABELS[v]), value: v }))]),
+    combo("startPeriod", "settingsStart", [last, ...PERIODS.map((v) => ({ text: t(`period_${v}`), value: v }))]),
+    combo("startRating", "settingsStart", [last, ...NSFW_LEVELS.map((l) => ({ text: l.label, value: String(l.v) }))]),
+    combo("startBlur", "settingsStart", [last, { text: t("blurOn"), value: "on" }, { text: t("blurOff"), value: "off" }]),
+    combo("localCheck", "settingsLocal", [
+      { text: t("localHash"), value: "hash" },
+      { text: t("localName"), value: "name" },
+      { text: t("localOff"), value: "off" },
+    ]),
+    {
+      id: "CivitaiDiscovery.Rescan",
+      category: cat(t("settingsLocal"), t("set_rescan")),
+      name: t("set_rescan"),
+      tooltip: t("set_rescan_hint"),
+      type: () =>
+        actionButtonElement(t("rescanNow"), async () => {
+          const res = await postJson(`${API}/local/rescan`, {});
+          for (const p of panels.values()) p.refreshLocal?.();
+          return t("rescanDone", { n: res.files ?? 0 });
+        }),
+      defaultValue: "",
+    },
+    {
+      id: optId("historySize"),
+      category: cat(t("settingsHistory"), t("set_historySize")),
+      name: t("set_historySize"),
+      tooltip: t("set_historySize_hint"),
+      type: "number",
+      attrs: { min: 10, max: 300, step: 10 },
+      defaultValue: OPT_DEFAULTS.historySize,
+    },
+    {
+      id: "CivitaiDiscovery.ClearHistory",
+      category: cat(t("settingsHistory"), t("set_clearHistory")),
+      name: t("set_clearHistory"),
+      tooltip: t("set_clearHistory_hint"),
+      type: () =>
+        actionButtonElement(t("clearHistoryNow"), async () => {
+          if (!confirm(t("clearHistoryConfirm"))) return "";
+          await promptHistory.load();
+          promptHistory.clear();
+          return t("historyClearedShort");
+        }),
+      defaultValue: "",
+    },
+    bool("fixedSeed", "settingsRecreate"),
+  ];
+}
+
+/**
+ * Once (first start with this version): widen ComfyUI's sidebar so the detail view's reaction
+ * row fits on one line. Only if it is narrower; never again afterwards, so the user's own
+ * width wins. ComfyUI keeps the width in localStorage (one key for all tabs, or one per tab).
+ */
+const PANEL_MIN_WIDTH = 440;
+function widenSidebarOnce() {
+  const common = loadPrefs("common");
+  if (common.sidebarWidened) return;
+  savePrefs("common", { ...common, sidebarWidened: true });
+  try {
+    const setting = app.extensionManager?.setting;
+    const side = setting?.get?.("Comfy.Sidebar.Location") === "right" ? "Right" : "Left";
+    const unified = setting?.get?.("Comfy.Sidebar.UnifiedWidth") !== false;
+    const base = `Comfy.Sidebar.${side}Width`;
+    const keys = unified ? [base] : Object.values(PANEL_INFO).map((p) => `${base}.${p.id}`);
+    const want = Math.min(PANEL_MIN_WIDTH, Math.round(window.innerWidth * 0.45));
+    for (const key of keys) {
+      const old = localStorage.getItem(key);
+      if (old != null && Number(old) >= want) continue;
+      localStorage.setItem(key, String(want));
+      // ComfyUI picks it up the next time the sidebar opens
+      window.dispatchEvent(new StorageEvent("storage", { key, oldValue: old, newValue: String(want), storageArea: localStorage, url: location.href }));
+    }
+  } catch {}
+}
+
+/** After our prefs are loaded: show their values in the ComfyUI settings. */
+function initComfySettings() {
+  settingsReady = true;
+  const domain = loadPrefs("discovery").domain || "auto";
+  shared.domain ||= domain;
+  syncSetting(SETTING_IDS.domain, domain);
+  const qa = loadPrefs("common").quickAction;
+  syncSetting(SETTING_IDS.quickAction, ACTION_KEYS.some((a) => a.key === qa) ? qa : "recreate");
+}
+
+/** Show a user's page in the Civitai Artists panel (from Discovery / Favorites). */
 function openInUsersTab(username) {
-  let p = panels.get("users");
-  if (!p) panels.set("users", (p = new BrowserPanel("users")));
+  const p = getPanel("users");
   p.state.recentUsers = [username, ...p.state.recentUsers.filter((u) => u !== username)].slice(0, 8);
-  const store = app.extensionManager?.sidebarTab;
-  if (store && store.activeSidebarTabId !== "civitai-users") store.toggleSidebarTab?.("civitai-users");
   p.userOrigin = null;
-  if (p.initialized) p.openUser(username, false);
-  else p.state.user = username; // init() loads it
+  if (!p.initialized) {
+    p.state.user = username; // init() loads it
+    p.state.model = null;
+  }
+  const wasInit = p.initialized;
+  showPanel("users");
+  if (wasInit) p.openUser(username, false);
+}
+
+/* Panel layout (ComfyUI settings, applied on page load): one sidebar tab per panel, or a
+   single "Civitai" tab whose header title switches between the panels. */
+const PANEL_INFO = {
+  discovery: { id: "civitai-discovery", icon: "pi pi-compass", title: "titleDiscovery" },
+  users: { id: "civitai-users", icon: "pi cf-userstar", title: "titleUsers" },
+  favorites: { id: "civitai-favorites", icon: "pi pi-heart", title: "titleFavorites" },
+};
+const layout = { single: false, enabled: ["discovery", "users", "favorites"], current: "discovery", host: null };
+function getPanel(mode) {
+  if (!panels.has(mode)) panels.set(mode, new BrowserPanel(mode));
+  return panels.get(mode);
+}
+/** Bring a panel to the front: its sidebar tab, or (single tab) switch the tab's content. */
+function showPanel(mode) {
+  const panel = getPanel(mode);
+  const store = app.extensionManager?.sidebarTab;
+  const tabId = layout.single ? PANEL_INFO.discovery.id : PANEL_INFO[mode].id;
+  if (layout.single) {
+    const old = layout.current !== mode ? panels.get(layout.current) : null;
+    if (old) {
+      old.closePanelMenu?.();
+      if (old.full) old.toggleFull(false);
+      old.root.querySelectorAll("video").forEach((v) => v.pause());
+    }
+    layout.current = mode;
+    savePrefs("common", { ...loadPrefs("common"), lastPanel: mode });
+    if (store && store.activeSidebarTabId !== tabId) store.toggleSidebarTab?.(tabId); // render() mounts it
+    else if (layout.host?.isConnected) attachPanel(panel, layout.host);
+  } else if (store && store.activeSidebarTabId !== tabId) store.toggleSidebarTab?.(tabId);
+  return panel;
+}
+function attachPanel(panel, el) {
+  // The host element has auto height; pin it so only our grid scrolls.
+  el.style.height = "100%";
+  el.style.overflow = "hidden";
+  if (panel.full) {
+    // stays in <body> while in full width; just follow the new host
+    panel.homeParent = el;
+    el.replaceChildren();
+    panel.positionFull();
+  } else el.replaceChildren(panel.root);
+  panel.init();
+  panel.relayout();
+  // resume a detail video that was paused when the tab was left
+  panel.detailView.querySelectorAll("video").forEach((v) => !panel.detailView.hidden && v._cfResume && v.play().catch(() => {}));
 }
 
 function registerTab(mode, id, icon, title) {
@@ -4571,38 +5242,33 @@ function registerTab(mode, id, icon, title) {
     tooltip: title,
     type: "custom",
     render: (el) => {
-      if (!panels.has(mode)) panels.set(mode, new BrowserPanel(mode));
-      const panel = panels.get(mode);
-      // The host element has auto height; pin it so only our grid scrolls.
-      el.style.height = "100%";
-      el.style.overflow = "hidden";
-      if (panel.full) {
-        // stays in <body> while in full width; just follow the new host
-        panel.homeParent = el;
-        el.replaceChildren();
-        panel.positionFull();
-      } else el.replaceChildren(panel.root);
-      panel.init();
-      // resume a detail video that was paused when the tab was left
-      panel.detailView.querySelectorAll("video").forEach((v) => !panel.detailView.hidden && v._cfResume && v.play().catch(() => {}));
+      if (layout.single) layout.host = el;
+      attachPanel(getPanel(layout.single ? layout.current : mode), el);
     },
     // tab closed or another sidebar tab opened: stop videos (they'd keep the GPU busy off-screen)
-    destroy: () => panels.get(mode)?.root.querySelectorAll("video").forEach((v) => v.pause()),
+    destroy: () => panels.get(layout.single ? layout.current : mode)?.root.querySelectorAll("video").forEach((v) => v.pause()),
   });
 }
 
 app.registerExtension({
   name: "civitai.discovery",
+  settings: comfySettings(),
   async setup() {
     await Promise.all([loadBaseModelGroups(), loadServerPrefs()]);
+    initComfySettings();
+    widenSidebarOnce();
     document.head.append(h("link", { rel: "stylesheet", href: new URL("./civitai_discovery.css", import.meta.url).href }));
 
     if (typeof app.extensionManager?.registerSidebarTab !== "function") {
       console.warn("[Civitai Discovery] This ComfyUI frontend does not support sidebar tabs. Please update ComfyUI.");
       return;
     }
-    registerTab("discovery", "civitai-discovery", "pi pi-compass", t("titleDiscovery"));
-    registerTab("users", "civitai-users", "pi cf-userstar", t("titleUsers"));
-    registerTab("favorites", "civitai-favorites", "pi pi-heart", t("titleFavorites"));
+    layout.single = opt("layout") === "single";
+    layout.enabled = ["discovery", opt("showArtists") ? "users" : null, opt("showFavorites") ? "favorites" : null].filter(Boolean);
+    if (layout.single) {
+      const last = loadPrefs("common").lastPanel;
+      layout.current = layout.enabled.includes(last) ? last : "discovery";
+      registerTab("discovery", PANEL_INFO.discovery.id, "pi pi-compass", layout.enabled.length > 1 ? "Civitai" : t("titleDiscovery"));
+    } else for (const mode of layout.enabled) registerTab(mode, PANEL_INFO[mode].id, PANEL_INFO[mode].icon, t(PANEL_INFO[mode].title));
   },
 });
