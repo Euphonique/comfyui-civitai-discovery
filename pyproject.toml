@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-civitai-discovery"
-description = "Browse Civitai inside ComfyUI: a discovery feed and your favorites/collections in the sidebar, with tag and text search, base model filters, one-click prompt/seed/image transfer into your workflow, reactions and collection management. "
-version = "1.2.2"
+description = "Browse Civitai inside ComfyUI: a discovery feed, your favorites/collections and the artists you follow in the sidebar, with tag and text search, base model filters, one-click prompt/seed/image transfer into your workflow, reactions and collection management. "
+version = "1.3.0"
 license = { file = "LICENSE" }
 dependencies = []
 
