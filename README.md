@@ -42,14 +42,13 @@ Both panels let you filter, insert prompts into prompt nodes with one click, and
 The search field at the top of both panels understands three kinds of input, which you can mix in one line, e.g. `#animal #forest @someone misty morning`:
 
 - **#tag**: Words marked with `#` are used as tags. Multi-word tags work with spaces too: `#star trek` finds the tag "star trek" (the longest run of words that is a tag wins; `#star trek misty forest` = tag "star trek" + text "misty forest"). Underscores or quotes are still possible: `#black_hair` or `#"black hair"`. While you type `#…`, spaces included, the field suggests matching tags; a tag picked there stays as it is, and words typed after it are text. The first Enter completes the tag, the second starts the search. If a tag doesn't exist, the word is searched as text instead and a notice appears.
-- **Tag without #**: While you type, the field suggests matching tags. These are the tags from the loaded results with their counts and, with an API key, all matching tags on Civitai. Selected tags appear as chips and can be removed with ×. Multiple tags are combined with AND.
+- **Without #**: Enter always runs a text search (the first suggestion, preselected). Below it, the field suggests matching tags; click one to use it as a tag. These are the tags from the loaded results with their counts and, with an API key, all matching tags on Civitai. Selected tags appear as chips and can be removed with ×. Multiple tags are combined with AND.
   - In **Discovery**, Civitai does the filtering, so the search covers the whole feed.
   - In **Favorites**, filtering happens within the loaded images.
 - **@user**: shows all works by that user.
 - **Free text** (all words without `#` or `@`), combinable with tags, base model, media type and user:
   - **Civitai text search:** Civitai has a new semantic image search, but only enables it for some accounts (gradual rollout). It also needs a full-access API key. If it is enabled for you, Discovery uses it to search all images on Civitai. The chip then reads "Search "…"".
   - **Fallback:** If Civitai rejects the search, and always in Favorites, the panel filters the prompts of the loaded images: matches must contain all the words you entered, and the panel loads more pages as needed. The chip then reads "Prompt contains "…"".
-  - If the input is a single word without `#`/`@` and a tag with exactly that name exists, the tag is used. To search it as free text, pick the last line in the suggestions.
 
 The **Tags** button shows a **tag cloud**:
 - **In the results**: the most frequent tags of the displayed images. The bigger the tag, the more often it appears.

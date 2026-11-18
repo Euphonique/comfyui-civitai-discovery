@@ -148,7 +148,7 @@ const STRINGS = {
     tagsInResults: "In the results",
     trendingTags: "Trending on Civitai",
     promptContains: "Prompt contains “{q}”",
-    searchInPrompt: "Search in prompts: “{q}”",
+    searchText: "Search “{q}”",
     searchUser: "Works by @{q}",
     clearAll: "Clear all",
     tags: "Tags",
@@ -357,7 +357,7 @@ const STRINGS = {
     tagsInResults: "In den Ergebnissen",
     trendingTags: "Trending auf Civitai",
     promptContains: "Prompt enthält „{q}“",
-    searchInPrompt: "In Prompts suchen: „{q}“",
+    searchText: "„{q}“ suchen",
     searchUser: "Werke von @{q}",
     clearAll: "Alle entfernen",
     tags: "Tags",
@@ -1711,14 +1711,13 @@ class BrowserPanel {
       // pick a tag for the "#word" being typed; the rest of the input stays
       for (const tag of tags) tagRow(tag, () => this.pickHashTag(tag));
     } else {
-      if (!structured && q.length > 0) {
-        for (const tag of tags) tagRow(tag, () => this.runSearch(() => this.addTag(tag)));
-      }
+      // plain words: Enter searches the text; tags are only offered (use "#" or click one)
       if (structured) {
         const parts = [...parsed.tags.map((x) => `#${x}`), ...parsed.users.map((u) => `@${u}`), parsed.text ? `„${parsed.text}“` : ""].filter(Boolean);
         add([h("i", { class: "pi pi-search" }), " ", `${t("search")}: ${parts.join(" + ")}`], () => this.submitSearch());
       } else if (q) {
-        add([h("i", { class: "pi pi-align-left" }), " ", t("searchInPrompt", { q })], () => this.runSearch(() => this.setText(q)), "muted");
+        add([h("i", { class: "pi pi-search" }), " ", t("searchText", { q })], () => this.runSearch(() => this.setText(q)));
+        for (const tag of tags) tagRow(tag, () => this.runSearch(() => this.addTag(tag)));
       }
     }
     this.suggestActions = actions;
@@ -1726,7 +1725,7 @@ class BrowserPanel {
     // "#star tr": preselect a tag that starts with what was typed; "#owl misty": Enter just searches
     const prefix = tags.findIndex((x) => normTag(x.name).startsWith(normTag(q)));
     const hashIdx = exact >= 0 ? exact : prefix >= 0 ? prefix : tags.length && !q.trim().includes(" ") ? 0 : null;
-    this.suggestIdx = mode === "hash" ? hashIdx : structured ? rows.length - 1 : exact >= 0 ? exact : null;
+    this.suggestIdx = mode === "hash" ? hashIdx : rows.length ? 0 : null;
     this.suggestBox.replaceChildren(...rows);
     rows.forEach((r, i) => r.classList.toggle("active", i === this.suggestIdx));
     this.suggestBox.hidden = document.activeElement !== this.searchInput || !rows.length;
@@ -1764,9 +1763,8 @@ class BrowserPanel {
     if (!raw) return;
     const parsed = this.parseSearch(raw);
     if (!parsed.tags.length && !parsed.users.length) {
-      // plain input: an exact tag name becomes a tag, anything else is text
-      const exact = await this.resolveTagByName(raw).catch(() => null);
-      return this.runSearch(() => (exact ? this.addTag(exact) : this.setText(raw)));
+      // plain input is always a text search; tags need "#" (or a click on a suggested tag)
+      return this.runSearch(() => this.setText(raw));
     }
     this.searchInput.value = "";
     this.hideSuggest();

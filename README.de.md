@@ -42,14 +42,13 @@ In beiden kannst du filtern, Prompts mit einem Klick in Prompt-Nodes übernehmen
 Das Suchfeld oben in beiden Panels versteht drei Arten von Eingaben, auch gemischt in einer Zeile, z. B. `#animal #forest @someone misty morning`:
 
 - **#Tag**: Mit `#` markierte Wörter werden als Tags übernommen. Mehrwortige Tags gehen auch mit Leerzeichen: `#star trek` findet den Tag „star trek“. Es gewinnt die längste Wortfolge, die ein Tag ist, also ergibt `#star trek misty forest` den Tag „star trek“ plus den Text „misty forest“. Unterstrich oder Anführungszeichen gehen weiterhin: `#black_hair` oder `#"black hair"`. Beim Tippen von `#…` schlägt das Feld passende Tags vor, auch mit Leerzeichen. Ein dort ausgewählter Tag bleibt, wie er ist, und Wörter danach sind Suchtext. Der erste Enter vervollständigt den Tag, der zweite startet die Suche. Gibt es einen Tag nicht, wird das Wort als Text gesucht, und ein Hinweis erscheint.
-- **Tag ohne #**: Während du tippst, schlägt das Feld passende Tags vor. Das sind die Tags aus den geladenen Ergebnissen mit Anzahl, und mit API-Key zusätzlich alle passenden Tags auf Civitai. Gewählte Tags erscheinen als Chips und lassen sich mit × wieder entfernen. Mehrere Tags werden mit UND verknüpft.
+- **Ohne #**: Enter startet immer eine Textsuche (der erste, vorausgewählte Vorschlag). Darunter schlägt das Feld passende Tags vor; ein Klick übernimmt einen davon als Tag. Das sind die Tags aus den geladenen Ergebnissen mit Anzahl, und mit API-Key zusätzlich alle passenden Tags auf Civitai. Gewählte Tags erscheinen als Chips und lassen sich mit × wieder entfernen. Mehrere Tags werden mit UND verknüpft.
   - In **Discovery** filtert Civitai selbst. Die Suche läuft also über den ganzen Feed.
   - In den **Favoriten** wird innerhalb der geladenen Bilder gefiltert.
 - **@User**: zeigt alle Werke dieses Users.
 - **Freier Text** (alle Wörter ohne `#` oder `@`), kombinierbar mit Tags, Basismodell, Medientyp und User:
   - **Civitai-Textsuche:** Civitai hat eine neue semantische Bildersuche, schaltet sie aber nur für einen Teil der Accounts frei (schrittweise Einführung). Sie braucht außerdem einen API-Key mit vollem Zugriff. Ist sie für dich freigeschaltet, sucht Discovery damit über alle Bilder auf Civitai. Der Chip heißt dann „Suche „…““.
   - **Fallback:** Lehnt Civitai die Suche ab, und in den Favoriten immer, filtert das Panel die Prompts der geladenen Bilder: Treffer müssen alle eingegebenen Wörter enthalten, bei Bedarf lädt das Panel Seiten nach. Der Chip heißt dann „Prompt enthält „…““.
-  - Besteht die Eingabe nur aus einem Wort ohne `#`/`@`, und es gibt einen Tag mit genau diesem Namen, wird der Tag übernommen. Für Freitext wähle in den Vorschlägen die letzte Zeile.
 
 Der Button **Tags** blendet eine **Tag-Cloud** ein:
 - **In den Ergebnissen**: die häufigsten Tags der angezeigten Bilder. Je größer der Tag, desto häufiger kommt er vor.
