@@ -68,12 +68,26 @@ class CivitaiClient:
             raise CivitaiError("No Civitai API key configured.", 401)
 
     async def _get_json(self, url: str, method: str = "GET", body: Any = None) -> Any:
-        try:
-            return await self._request_json(url, method, body)
-        except asyncio.TimeoutError:
-            raise CivitaiError("Civitai did not respond in time. Please try again.", 504)
-        except aiohttp.ClientError as e:
-            raise CivitaiError(f"Could not reach Civitai: {e}", 502)
+        # Civitai hiccups now and then (rate limit, 5xx from Cloudflare): reads are retried
+        # once after a short pause. Writes (POST) never are, so nothing is saved twice.
+        attempts = 2 if method == "GET" else 1
+        for attempt in range(attempts):
+            try:
+                return await self._request_json(url, method, body)
+            except CivitaiError as e:
+                if attempt + 1 < attempts and e.status in RETRY_STATUSES:
+                    await asyncio.sleep(1.5 if e.status != 429 else 3)
+                    continue
+                raise
+            except asyncio.TimeoutError:
+                if attempt + 1 < attempts:
+                    continue
+                raise CivitaiError("Civitai did not respond in time. Please try again.", 504)
+            except aiohttp.ClientError as e:
+                if attempt + 1 < attempts:
+                    await asyncio.sleep(1.5)
+                    continue
+                raise CivitaiError(f"Could not reach Civitai: {e}", 502)
 
     async def _request_json(self, url: str, method: str = "GET", body: Any = None) -> Any:
         async with aiohttp.ClientSession(headers=self._headers, timeout=self._timeout) as s:
@@ -299,6 +313,11 @@ class CivitaiClient:
             payload["cursor"] = int(cursor)
         page = await self._trpc("semanticImageSearch.search", payload)
         items = (page or {}).get("items") or []
+        if not items and cursor in (None, ""):
+            # under load Civitai sometimes answers a first page with nothing: ask once more
+            await asyncio.sleep(1.0)
+            page = await self._trpc("semanticImageSearch.search", payload)
+            items = (page or {}).get("items") or []
         meta_by_id = await self._fetch_meta([i["id"] for i in items if i.get("id")], browsing_level)
         return {
             "items": [_normalize_item(i, meta_by_id.get(i.get("id")), self.base) for i in items],
@@ -468,7 +487,14 @@ def resolve_base_url(domain: str | None, browsing_level: int | None = None) -> s
     return DOMAINS["com"]
 
 
+RETRY_STATUSES = {429, 500, 502, 503, 504, 520, 521, 522, 523, 524}
+
+
 def _error_message(data: Any, text: str, status: int) -> str:
+    if status == 429:
+        return "Civitai is limiting requests right now (too many in a short time). Please wait a minute and try again."
+    if status in RETRY_STATUSES:
+        return f"Civitai is having trouble right now (HTTP {status}). Please try again in a moment."
     if status == 401:
         return "Civitai rejected the API key (401). Check that the key is valid."
     if status == 403:
